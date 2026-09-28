@@ -31,7 +31,8 @@
 
 ## mod 实改（第二阶段）
 
-`MOD_BASELINE.md` 记录了追加式实改入口：备份 → scripts.txt/simple_triggers.txt/strings/csv 尾部追加 → 校验计数行 → 可回滚。
+`MOD_BASELINE.md` 记录了追加式实改入口与实改日志：备份 → scripts.txt/simple_triggers.txt/strings/csv 尾部追加 → 校验计数行 → 可回滚。
+已落地：金融之道文本资产层（季报/希勒卡/事件/体检文案，双语汉化）+ 商道季结触发器（每 7 天 +100 两，操作码与 mod 既有用法逐位一致）；待游戏内验证项见 MOD_BASELINE 第五节。
 P0 实改清单与验收见飞书 GDD：https://my.feishu.cn/docx/Ms3XdtPKto1S1BxWJ7Vc45hynhd
 
 ## 在线试玩
