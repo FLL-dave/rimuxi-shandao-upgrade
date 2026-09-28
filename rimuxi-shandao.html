@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日暮西山·商道</title>
+<style>
+  :root{
+    --bg:#14171f; --panel:#1d222c; --panel2:#232936; --line:#3a4252;
+    --gold:#c9a961; --cinnabar:#b5403f; --jade:#4a8f7a; --ink:#14171f;
+    --text:#d8d3c8; --muted:#8a867c; --bright:#f0e9d8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(1200px 800px at 70% -10%, #232936 0%, var(--bg) 55%), var(--bg);
+    color:var(--text);
+    font-family:'Georgia','Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;
+    line-height:1.55; overflow-x:hidden;
+  }
+  .screen{display:none; min-height:100vh; padding:18px; max-width:1180px; margin:0 auto;}
+  .screen.active{display:block;}
+  button{
+    font-family:inherit; background:var(--panel2); color:var(--bright);
+    border:1px solid var(--line); border-radius:4px; padding:7px 14px; cursor:pointer; font-size:14px;
+    transition:border-color .15s, background .15s;
+  }
+  button:hover{border-color:var(--gold);}
+  button:disabled{opacity:.38; cursor:not-allowed;}
+  button.primary{background:var(--cinnabar); border-color:var(--cinnabar); color:#f5ede0;}
+  button.primary:hover{background:#c74d4b;}
+  button.gold{background:transparent; border-color:var(--gold); color:var(--gold);}
+  .badge{display:inline-block; padding:1px 9px; border-radius:10px; font-size:12px; border:1px solid;}
+  .badge.low{color:#69b39b; border-color:#2f5c4c;}
+  .badge.med{color:var(--gold); border-color:#6b5a2e;}
+  .badge.high{color:#d9706d; border-color:#6b3030;}
+  .badge.gold{color:var(--gold); border-color:#6b5a2e;}
+  h1,h2,h3{color:var(--bright); font-weight:600;}
+  h1{font-size:34px; letter-spacing:10px;}
+  h2{font-size:20px; letter-spacing:3px; margin-bottom:10px;}
+  h3{font-size:15px; letter-spacing:2px;}
+  .muted{color:var(--muted);}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  /* ---------- 开始屏 ---------- */
+  #screen-start{flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px;}
+  #screen-start.active{display:flex;}
+  .seal{
+    width:74px; height:74px; border:3px solid var(--cinnabar); color:var(--cinnabar);
+    display:flex; align-items:center; justify-content:center; border-radius:8px;
+    transform:rotate(-6deg); font-size:26px; letter-spacing:0; margin:6px auto 4px;
+  }
+  .subtitle{color:var(--muted); letter-spacing:2px; font-size:15px;}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px;}
+  .start-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:820px; width:100%; text-align:left;}
+  @media(max-width:640px){ .start-grid{grid-template-columns:1fr;} }
+  .start-grid .card h3{color:var(--gold);}
+  #map-svg{width:100%; max-width:560px; height:auto; margin:8px auto;}
+  /* ---------- 顶栏 ---------- */
+  #topbar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; padding:10px 14px;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:12px;}
+  .stat{display:flex; align-items:baseline; gap:6px;}
+  .stat .k{color:var(--muted); font-size:12px;}
+  .stat .v{color:var(--bright); font-size:17px;}
+  .stat .v.warn{color:#d9706d;}
+  #fate-wrap{flex:1; min-width:160px;}
+  #fate-bar{height:8px; background:#2b3040; border-radius:4px; overflow:hidden; margin-top:3px;}
+  #fate-fill{height:100%; background:linear-gradient(90deg,var(--jade),var(--gold)); width:90%; transition:width .4s;}
+  /* ---------- 主界面三栏 ---------- */
+  #game-main{display:grid; grid-template-columns:300px 1fr 300px; gap:12px;}
+  @media(max-width:900px){ #game-main{grid-template-columns:1fr;} }
+  .col{display:flex; flex-direction:column; gap:12px; min-width:0;}
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px;}
+  .panel h3{color:var(--gold); border-bottom:1px solid var(--line); padding-bottom:6px; margin-bottom:8px;}
+  .route-item{border:1px solid var(--line); border-radius:6px; padding:7px 9px; margin-bottom:6px; cursor:pointer; background:var(--panel2);}
+  .route-item.selected{border-color:var(--gold);}
+  .route-item .rhead{display:flex; justify-content:space-between; align-items:center;}
+  .route-item .rname{font-size:13px; color:var(--bright);}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{color:var(--muted); font-weight:400; text-align:left; padding:4px 6px; border-bottom:1px solid var(--line); font-size:12px;}
+  td{padding:5px 6px; border-bottom:1px solid #2a3040;}
+  td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  td.up{color:#69b39b;} td.down{color:#d9706d;} td.flat{color:var(--muted);}
+  .qty-btns{display:flex; gap:4px; justify-content:flex-end;}
+  .qty-btns button{padding:3px 7px; font-size:12px;}
+  .action-stack{display:flex; flex-direction:column; gap:8px;}
+  .ins-line{display:flex; justify-content:space-between; align-items:center; padding:6px 0;}
+  .log{max-height:150px; overflow-y:auto; font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding-top:6px;}
+  .log p{margin-bottom:2px;}
+  .big-actions{display:flex; gap:10px; margin-top:4px;}
+  #btn-end{flex:1;}
+  /* ---------- 弹窗 ---------- */
+  .modal-mask{position:fixed; inset:0; background:rgba(10,12,16,.78); display:none; align-items:center; justify-content:center; z-index:50; padding:16px;}
+  .modal-mask.active{display:flex;}
+  .modal{background:var(--panel); border:1px solid var(--gold); border-radius:10px; max-width:560px; width:100%;
+    max-height:86vh; overflow-y:auto; padding:20px 22px;}
+  .modal h2{color:var(--gold); letter-spacing:4px;}
+  .wisdom .formula{background:#20242e; border:1px dashed var(--gold); border-radius:6px; padding:9px 12px;
+    font-family:Consolas,'Courier New',monospace; color:#e6c887; margin:8px 0; font-size:14px;}
+  .wisdom .ming{color:#b9c4b0; font-size:13.5px;}
+  .wisdom .shiller{border-left:3px solid var(--cinnabar); padding-left:10px; color:var(--text); font-size:13.5px; margin-top:8px;}
+  .wisdom .tags{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;}
+  .wisdom .tags span{font-size:12px; color:var(--muted); border:1px solid var(--line); padding:1px 8px; border-radius:10px;}
+  /* ---------- 终局 ---------- */
+  #screen-end .end-card{max-width:760px; margin:0 auto;}
+  .grade-line{font-size:24px; color:var(--gold); letter-spacing:6px; margin:10px 0;}
+  .diag{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0;}
+  @media(max-width:640px){ .diag{grid-template-columns:1fr;} }
+  .diag .ditem{border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-size:13px; background:var(--panel2);}
+  .diag .ditem b{color:var(--bright);}
+  .know-list{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0;}
+  .know-list span{border:1px solid var(--gold); color:var(--gold); border-radius:12px; padding:2px 12px; font-size:13px;}
+  /* ---------- 知识图谱 ---------- */
+  #screen-knowledge{max-width:960px;}
+  #kg-svg{width:100%; height:auto; background:var(--panel); border:1px solid var(--line); border-radius:8px;}
+  /* ---------- 调试 ---------- */
+  #debug{position:fixed; left:10px; bottom:10px; z-index:60; max-width:340px; font-size:12px;}
+  #debug summary{color:var(--muted); cursor:pointer; user-select:none;}
+  #debug .dbg-body{background:rgba(20,23,31,.96); border:1px solid var(--line); border-radius:6px; padding:8px; margin-top:4px;}
+  #debug textarea{width:100%; height:70px; background:#10131a; color:#9fb39f; border:1px solid var(--line); font-size:11px; font-family:Consolas,monospace;}
+  input[type=number]{background:#10131a; color:var(--bright); border:1px solid var(--line); border-radius:4px; padding:5px 8px; font-family:inherit; width:110px;}
+  .hint{font-size:12px; color:var(--muted);}
+  .contract{border:1px dashed var(--gold); border-radius:6px; padding:8px 10px; margin:6px 0; font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- ===================== 开始屏 ===================== -->
+<div id="screen-start" class="screen active">
+  <div class="seal">商</div>
+  <h1>日暮西山 · 商道</h1>
+  <div class="subtitle">崇祯十六年，大明将倾。你是一个小商贾——在王朝覆灭之前，读懂金融。</div>
+  <svg id="map-svg" viewBox="0 0 560 340" aria-label="明末商路图"></svg>
+  <div class="start-grid">
+    <div class="card"><h3>怎么玩</h3>
+      <p>每季一回合，共 8 季（崇祯十六年春 → 十七年秋）。在六城之间低买高卖，目标身家 <b>4000 两</b> 活过王朝倾覆。商路有风险预告，镖局保险、钱庄杠杆、粮行期货任你取舍。</p>
+    </div>
+    <div class="card"><h3>学什么</h3>
+      <p>每一套机制背后，都是耶鲁《金融市场》的课程智慧：风险与保险、风险溢价、分散化、杠杆、期货对冲、泡沫、通胀、行为金融、财政危机。触发即弹出「希勒小课堂」，局后有知识体检。</p>
+    </div>
+    <div class="card"><h3>这一局的气数</h3>
+      <p>1643 年秋，流寇乱中原；1644 年春，李自成破京师；夏，清军入关。大明气数将尽——<b>王朝会覆灭，但懂得风险管理的商人能活下来。</b></p>
+    </div>
+    <div class="card"><h3>规则速览</h3>
+      <p>· 出行一次/季，商路风险以低/中/高预告<br>· 投保保费 = 货物市值 6%，被劫赔 80%<br>· 钱庄季利 10%，借款上限 = 银两 × 2<br>· 汉口粮行可签青苗合约锁米价<br>· 北方资产在终局按 60% 折算（战火）</p>
+    </div>
+  </div>
+  <div class="row" style="gap:12px; margin-top:14px;">
+    <button class="primary" id="btn-start" style="font-size:16px; padding:10px 26px;">开张营业</button>
+    <button class="gold" id="btn-knowledge">希勒小课堂 · 大明版</button>
+  </div>
+  <p class="muted hint" style="margin-top:12px;">ruleset RMX-SHANDAO-V1 · 单文件离线可玩 · 教程向概念原型</p>
+</div>
+
+<!-- ===================== 主界面 ===================== -->
+<div id="screen-game" class="screen">
+  <div id="topbar">
+    <div class="stat"><span class="k">节气</span><span class="v" id="st-season">—</span></div>
+    <div class="stat"><span class="k">所在地</span><span class="v" id="st-city">—</span></div>
+    <div id="fate-wrap"><div class="stat"><span class="k">大明气数</span><span class="v" id="st-fate">—</span></div>
+      <div id="fate-bar"><div id="fate-fill"></div></div></div>
+    <div class="stat"><span class="k">银两</span><span class="v" id="st-silver">—</span></div>
+    <div class="stat"><span class="k">负债</span><span class="v" id="st-debt">—</span></div>
+    <div class="stat"><span class="k">身家</span><span class="v" id="st-wealth">—</span></div>
+    <div class="stat"><span class="k">库容</span><span class="v" id="st-cap">—</span></div>
+    <button class="gold" id="btn-knowledge2" style="margin-left:auto;">知识图谱</button>
+  </div>
+
+  <div id="game-main">
+    <!-- 左：商路与出行 -->
+    <div class="col">
+      <div class="panel">
+        <h3>商路与出行</h3>
+        <div id="route-list"></div>
+        <div class="ins-line">
+          <span class="hint" id="ins-label">镖局投保</span>
+          <input type="checkbox" id="chk-ins" style="width:18px; height:18px;">
+        </div>
+        <div class="hint" id="ins-cost" style="margin-bottom:6px;"></div>
+        <div class="action-stack">
+          <button id="btn-go" class="primary">出发（耗时一季）</button>
+          <div id="travel-msg" class="hint"></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>随行日志</h3>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+    <!-- 中：市场 -->
+    <div class="col">
+      <div class="panel">
+        <h3 id="market-title">— 市价</h3>
+        <table>
+          <thead><tr><th>货品</th><th>价格(两)</th><th>行情</th><th>库存</th><th>操作</th></tr></thead>
+          <tbody id="market-body"></tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <h3>经营</h3>
+        <div class="action-stack">
+          <div class="row">
+            <span class="hint">钱庄借贷（季利10%，上限=银两×2）</span>
+            <button id="btn-borrow">借满</button>
+            <button id="btn-repay">还清</button>
+          </div>
+          <div id="loan-info" class="hint"></div>
+          <div id="futures-panel" style="display:none;">
+            <div class="row" style="justify-content:space-between;">
+              <span class="hint">汉口粮行 · 青苗合约</span>
+              <button class="gold" id="btn-futures">签一份（锁价 当前米价×1.05）</button>
+            </div>
+            <div id="futures-msg" class="hint"></div>
+          </div>
+          <div id="contract-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右：状态与行动 -->
+    <div class="col">
+      <div class="panel">
+        <h3>本季速览</h3>
+        <div id="season-info" class="hint"></div>
+        <div id="cargo-list" style="margin-top:8px; font-size:13px;"></div>
+      </div>
+      <div class="panel">
+        <h3>行动</h3>
+        <div class="big-actions">
+          <button id="btn-end" class="primary">结束本季 →</button>
+        </div>
+        <div class="hint" style="margin-top:8px;" id="end-hint">买卖与借贷完成后，结束本季结算事件与利息。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 事件/智慧卡弹窗 ===================== -->
+<div id="modal-event" class="modal-mask">
+  <div class="modal">
+    <h2 id="ev-title">事件</h2>
+    <div id="ev-body" style="margin:10px 0;"></div>
+    <button class="primary" id="btn-ev-ok" style="width:100%;">知道了</button>
+  </div>
+</div>
+
+<div id="modal-wisdom" class="modal-mask">
+  <div class="modal wisdom">
+    <h2 id="ws-title">希勒小课堂</h2>
+    <div class="tags" id="ws-tags"></div>
+    <div id="ws-intuition" style="font-size:15px; margin:6px 0;"></div>
+    <div class="formula" id="ws-formula"></div>
+    <div class="ming" id="ws-ming"></div>
+    <div class="shiller" id="ws-shiller"></div>
+    <button class="primary" id="btn-ws-ok" style="width:100%; margin-top:12px;">收下这课</button>
+  </div>
+</div>
+
+<!-- ===================== 终局 ===================== -->
+<div id="screen-end" class="screen">
+  <div class="end-card card">
+    <h2>崇祯十七年 · 秋</h2>
+    <div id="end-flavor" class="muted" style="margin:8px 0;"></div>
+    <div class="grade-line" id="end-grade">—</div>
+    <div class="stat"><span class="k">最终身家</span><span class="v" id="end-wealth">—</span></div>
+    <div id="end-sub" class="muted" style="margin-top:4px;"></div>
+    <h3 style="margin-top:14px;">知识体检 · 希勒式点评</h3>
+    <div class="diag" id="end-diag"></div>
+    <h3 style="margin-top:12px;">本局掌握的课程概念</h3>
+    <div class="know-list" id="end-know"></div>
+    <div class="muted hint" id="end-missing" style="margin:6px 0;"></div>
+    <div class="row" style="margin-top:14px; justify-content:center; gap:12px;">
+      <button class="primary" id="btn-again">再来一局</button>
+      <button class="gold" id="btn-end-kg">查看知识图谱</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 知识图谱 ===================== -->
+<div id="screen-knowledge" class="screen">
+  <div class="row" style="justify-content:space-between; margin-bottom:10px;">
+    <h2>希勒小课堂 · 大明版</h2>
+    <button class="gold" id="btn-kg-back">返回</button>
+  </div>
+  <svg id="kg-svg" viewBox="0 0 900 520"></svg>
+  <div class="card" style="margin-top:12px;">
+    <h3>九张智慧卡 · 概念总览</h3>
+    <div id="kg-list" style="font-size:13.5px; margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- ===================== 调试面板 ===================== -->
+<details id="debug">
+  <summary>调试（规则集 RMX-SHANDAO-V1）</summary>
+  <div class="dbg-body">
+    <div class="row" style="justify-content:space-between;"><span class="hint">随机种子</span><span id="dbg-seed"></span></div>
+    <div class="row" style="justify-content:space-between;"><span class="hint">投保费率</span><span id="dbg-p1"></span></div>
+    <div class="row" style="justify-content:space-between;"><span class="hint">赔付率/裸奔损失</span><span id="dbg-p2"></span></div>
+    <div class="row" style="justify-content:space-between;"><span class="hint">钱庄季利/上限</span><span id="dbg-p3"></span></div>
+    <div class="row" style="justify-content:space-between;"><span class="hint">商路风险 低/中/高</span><span id="dbg-p4"></span></div>
+    <textarea id="dbg-state" readonly></textarea>
+  </div>
+</details>
+
+<script>
+/*CONFIG_START*/
+const CONFIG = {
+  "ruleset_id": "RMX-SHANDAO-V1",
+  "version": "1.0.0",
+  "start_silver": 1000,
+  "start_city": "beijing",
+  "seasons": 8,
+  "season_labels": ["崇祯十六年·春", "崇祯十六年·夏", "崇祯十六年·秋", "崇祯十六年·冬", "崇祯十七年·春", "崇祯十七年·夏", "崇祯十七年·秋", "崇祯十七年·冬"],
+  "targets": {"survive": 4000, "big": 10000, "king": 20000},
+  "north_discount": 0.6,
+  "fate_start": 90,
+  "fate_decay": 4,
+  "cargo_cap": 120,
+  "travel_base_cost": 8,
+  "travel_per_unit": 0.05,
+  "insurance": {"premium": 0.06, "coverage": 0.8, "uninsured_loss": 0.7},
+  "loan": {"rate": 0.1, "max_mult": 2, "cap": 3000, "forced_sell_price": 0.8},
+  "futures": {"q_max": 100, "contract_cap": 2, "lock_markup": 0.05},
+  "iron_confiscate": 0.12,
+  "iron_fine": 50,
+  "price_walk": 0.1,
+  "mean_revert": 0.15,
+  "bubble": {"cost": 300, "sell_next": 450, "crash_value": 100, "hold_seasons": 2},
+  "cities": [
+    {"id": "beijing", "name": "京师", "region": "north", "desc": "大明都城，物价随战事起伏", "x": 330, "y": 110, "mods": {"grain": 1.05, "salt": 1.0, "silk": 1.1, "tea": 1.05, "iron": 1.0, "ginseng": 1.45}},
+    {"id": "yangzhou", "name": "扬州", "region": "south", "desc": "盐商云集，江南富庶，丝绸产地", "x": 440, "y": 270, "mods": {"grain": 1.1, "salt": 0.9, "silk": 0.85, "tea": 1.0, "iron": 0.9, "ginseng": 1.5}},
+    {"id": "hankou", "name": "汉口", "region": "south", "desc": "九省通衢，米粮集散，有粮行", "x": 240, "y": 255, "mods": {"grain": 0.9, "salt": 1.05, "silk": 1.0, "tea": 0.9, "iron": 1.05, "ginseng": 1.35}},
+    {"id": "xian", "name": "西安", "region": "north", "desc": "西北重镇，军需紧张", "x": 110, "y": 190, "mods": {"grain": 1.1, "salt": 1.2, "silk": 1.2, "tea": 1.1, "iron": 1.2, "ginseng": 1.25}},
+    {"id": "datong", "name": "大同", "region": "north", "desc": "边关互市，与蒙古通商", "x": 250, "y": 75, "mods": {"grain": 1.0, "salt": 1.15, "silk": 1.25, "tea": 1.2, "iron": 1.45, "ginseng": 1.3}},
+    {"id": "shengjing", "name": "盛京", "region": "north", "desc": "后金都城，人参貂皮产地，凶险之地", "x": 480, "y": 55, "mods": {"grain": 1.5, "salt": 1.4, "silk": 1.6, "tea": 1.5, "iron": 1.8, "ginseng": 0.7}}
+  ],
+  "goods": [
+    {"id": "grain", "name": "米粮", "base": 2, "vol": 0.25, "desc": "最易受天灾人祸影响，汉口价低"},
+    {"id": "salt", "name": "食盐", "base": 6, "vol": 0.15, "desc": "官盐，价格平稳，扬州价低"},
+    {"id": "silk", "name": "丝绸", "base": 20, "vol": 0.2, "desc": "江南名产，富贵人家争购"},
+    {"id": "tea", "name": "茶叶", "base": 8, "vol": 0.2, "desc": "边贸硬通货，汉口价低"},
+    {"id": "iron", "name": "兵甲", "base": 30, "vol": 0.25, "desc": "私贩违禁，每季查获风险12%，罚银50两"},
+    {"id": "ginseng", "name": "人参", "base": 40, "vol": 0.3, "desc": "辽东奇货，价高路险"}
+  ],
+  "route_risk": {"low": 0.08, "medium": 0.15, "high": 0.30},
+  "routes": [
+    {"a": "beijing", "b": "yangzhou", "risk": "low", "name": "京扬大道"},
+    {"a": "beijing", "b": "hankou", "risk": "low", "name": "京汉官道"},
+    {"a": "yangzhou", "b": "hankou", "risk": "low", "name": "江汉水路"},
+    {"a": "datong", "b": "xian", "risk": "low", "name": "三晋内线"},
+    {"a": "beijing", "b": "xian", "risk": "medium", "name": "秦晋古道"},
+    {"a": "xian", "b": "datong", "risk": "medium", "name": "雁门商路"},
+    {"a": "xian", "b": "hankou", "risk": "medium", "name": "秦岭栈道"},
+    {"a": "hankou", "b": "datong", "risk": "medium", "name": "中原官道"},
+    {"a": "yangzhou", "b": "xian", "risk": "medium", "name": "江上盐道"},
+    {"a": "yangzhou", "b": "datong", "risk": "medium", "name": "运河北上"},
+    {"a": "beijing", "b": "datong", "risk": "high", "name": "宣大边道"},
+    {"a": "beijing", "b": "shengjing", "risk": "high", "name": "山海关外"},
+    {"a": "datong", "b": "shengjing", "risk": "high", "name": "漠南商道"},
+    {"a": "yangzhou", "b": "shengjing", "risk": "high", "name": "海路转陆"},
+    {"a": "hankou", "b": "shengjing", "risk": "high", "name": "直捣辽东"}
+  ],
+  "scheduled": [
+    {"season": 3, "title": "流寇乱中原", "text": "李自成部转战河南陕西，官道不靖。北方商路风险+10%，北方米价上涨30%。", "risk_bonus_north": 0.1, "grain_north": 1.3, "fate": -3},
+    {"season": 5, "title": "李自成破京师", "text": "大顺军攻陷京师，崇祯帝自缢煤山。京师米价暴涨一倍，通往京师之路凶险万分。", "risk_to_beijing": 0.15, "grain_beijing": 2.0, "fate": -8},
+    {"season": 7, "title": "清军入关", "text": "摄政王多尔衮率八旗铁骑入关，与吴三桂合兵。北方烽火连天，商品贱卖，商路风险大涨。", "risk_north": 0.15, "goods_north": 0.85, "fate": -10}
+  ],
+  "events": [
+    {"id": "harvest", "title": "天下丰年", "weight": 10, "text": "南北丰收，米价下跌两成。囤米的粮商叫苦，买米的百姓开颜。", "grain_all": 0.8, "card": null},
+    {"id": "famine", "title": "大旱饥荒", "weight": 10, "text": "赤地千里，流民塞道。北方米价暴涨六成，南方涨两成。", "grain_north": 1.6, "grain_south": 1.2, "card": null},
+    {"id": "bubble", "title": "江南炒地", "weight": 8, "text": "扬州传来地价疯涨的消息——三百两买地契，来季可售四百五十两。人人都说地价还会涨。", "card": "bubble", "bubble_offer": true},
+    {"id": "baopiao", "title": "宝钞风波", "weight": 8, "text": "朝廷强推宝钞，你手中的现银被兑成宝钞——宝钞百不值一，转眼成了废纸。白银仍是硬通货。", "cash_loss": 0.15, "card": "money"},
+    {"id": "tax", "title": "三饷加派", "weight": 10, "text": "辽饷、剿饷、练饷三饷并征，官府加税，利润变薄。", "sell_tax": 0.93, "fate": -2, "card": "fiscal"},
+    {"id": "plague", "title": "京师瘟疫", "weight": 6, "text": "京师大疫，城门紧闭，商旅隔绝。你无法前往京师，亦无法离开（若身在京师则本季滞留）。", "block_city": "beijing", "card": null},
+    {"id": "salt", "title": "盐引新政", "weight": 6, "text": "官府严查私盐私铁，兵甲查获风险+10%，盐价上涨一成。", "iron_confiscate_bonus": 0.1, "salt_all": 1.1, "card": null},
+    {"id": "li", "title": "流寇东进", "weight": 8, "text": "流寇逼近西安大同，两地商路风险+12%，西安米价上涨三成。", "risk_xian_datong": 0.12, "grain_xian": 1.3, "card": null},
+    {"id": "liaodong", "title": "辽东烽火", "weight": 8, "text": "后金大军征明，辽东战事吃紧。盛京货贱（×0.85），通盛京商路风险+8%。", "goods_shengjing": 0.85, "risk_to_shengjing": 0.08, "card": null},
+    {"id": "market", "title": "互市重开", "weight": 8, "text": "大同互市重开，蒙古商队云集。茶叶食盐在大同涨两成，通大同商路风险-5%。", "tea_salt_datong": 1.2, "risk_to_datong": -0.05, "card": null},
+    {"id": "silver_in", "title": "番船白银", "weight": 9, "text": "吕宋番船运来白银，江南绸茶畅销海外。扬州汉口的丝绸茶叶价格涨一成五。", "silk_tea_south": 1.15, "card": null},
+    {"id": "silver_out", "title": "白银外流", "weight": 9, "text": "白银外流，银贵物贱，各处卖价下跌。持银者最稳，持货者心惊。", "sell_all": 0.95, "card": null}
+  ],
+  "wisdom": [
+    {"id": "insurance", "title": "风险与保险", "tags": ["风险共担", "期望损失"], "intuition": "把『小概率的大损失』换成『确定的小损失』——多付的保费，买的是睡得着觉。", "formula": "期望损失 = P(出事) × 损失金额；投保后 = 保费 + P × 免赔损失", "ming": "镖局走镖、船帮护航，就是古代的保险。山西票号靠它，把商路铺到万里之外。", "shiller": "希勒课程要点：保险不是赌博，它让风险由众人分担——这是金融最古老也最温柔的功能。"},
+    {"id": "risk_premium", "title": "风险溢价", "tags": ["资本资产定价", "期望收益"], "intuition": "高风险商路的暴利不是运气，是市场给风险的标价。", "formula": "E(R) = Rf + β·[E(Rm) − Rf]", "ming": "辽东一箱人参可抵江南三车绸缎——那是用命换来的溢价。", "shiller": "希勒课程要点：资产定价的核心问题，是风险到底该得到多少补偿。"},
+    {"id": "diversification", "title": "分散化", "tags": ["相关性", "组合波动"], "intuition": "别把全部货物押在一条路上。", "formula": "组合方差 = Σwi²σi² + 2ΣΣwiwjρijσiσj（ρ<1 即降险）", "ming": "徽商『贾而好儒、多元经营』——茶、盐、典当、布匹都做，才扛得过行业周期。", "shiller": "希勒课程要点：分散化是金融市场送给普通人的免费午餐。"},
+    {"id": "leverage", "title": "杠杆与负债", "tags": ["放大", "复利"], "intuition": "借钱能把盈利放大，也能把亏损放大到破产。", "formula": "放大倍数 = 1 + 负债/本金；亏损时同倍放大", "ming": "明末钱庄『九出十三归』，月利两分复利——多少殷实人家借到倾家荡产。", "shiller": "希勒课程要点：杠杆不改变投资的好坏，只放大它的后果。"},
+    {"id": "futures", "title": "期货与对冲", "tags": ["远期", "锁价", "预售"], "intuition": "提前把将来要卖的粮锁个价——放弃可能的暴利，换来旱涝保收的确定性。", "formula": "盈亏 = (锁定价 − 市价) × 数量", "ming": "青苗未熟先卖、漕粮预购，都是明代的远期合约；农户粮商靠它不怕荒年。", "shiller": "希勒课程要点：期货的本义不是投机，是让生产者把价格风险转移出去。"},
+    {"id": "bubble", "title": "泡沫与投机", "tags": ["价格≠价值", "接最后一棒"], "intuition": "价格暴涨不等于价值增长——涨得越急，越像击鼓传花。", "formula": "价格 = 未来现金流折现值；价格远超合理折现，即为泡沫", "ming": "崇祯年间江南土地投机、米市囤积，与郁金香、南海泡沫同出一辙。", "shiller": "希勒课程要点：每一次泡沫里都有人说『这次不一样』——而他们几乎总是错的。"},
+    {"id": "money", "title": "货币与通胀", "tags": ["购买力", "隐性税"], "intuition": "钱本身不值钱，值钱的是它买得到的东西。", "formula": "MV = PY（货币量 × 流速 = 物价 × 产出）", "ming": "宝钞从洪武到崇祯贬值千倍，民间只认白银——通胀是对持币者最隐蔽的税。", "shiller": "希勒课程要点：货币的价值来自信任，而信任会在滥发中悄悄蒸发。"},
+    {"id": "behavioral", "title": "行为金融", "tags": ["处置效应", "损失厌恶"], "intuition": "赚钱时急着落袋，亏钱时死扛到底——这是人性，不是理性。", "formula": "前景理论：损失侧的效用曲线更陡；损失厌恶系数 ≈ 2", "ming": "米市上『买涨不买落』的羊群，和今日追涨杀跌的股民，是同一群人。", "shiller": "希勒课程要点：市场不是完全理性的，它由带着情绪的人组成。"},
+    {"id": "fiscal", "title": "财政危机", "tags": ["主权债务", "入不敷出"], "intuition": "国家入不敷出时，最先被征收的，是民间最灵活的钱。", "formula": "债务可持续：赤字 → 债务/产出比 → 通胀或违约", "ming": "辽饷、剿饷、练饷三饷并征，仍填不满辽东的军费——财政崩溃比城破更先到来。", "shiller": "希勒课程要点：主权债务危机常常不是军事失败的结果，而是它的原因。"}
+  ]
+}
+/*CONFIG_END*/
+
+/* ================= 工具与索引 ================= */
+function mulberry32(seed){ let a=seed>>>0; return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+let rng = mulberry32((Date.now()^0x9e3779b9)>>>0);
+function R(){ return rng(); }
+function ri(n){ return Math.floor(R()*n); }
+function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
+function round1(x){ return Math.round(x*10)/10; }
+function fmt(n){ return Math.round(n).toLocaleString('zh-CN'); }
+const C = CONFIG;
+const cityById={}; C.cities.forEach(c=>cityById[c.id]=c);
+const goodById={}; C.goods.forEach(g=>goodById[g.id]=g);
+const routesByCity={}; C.routes.forEach(r=>{ (routesByCity[r.a]=routesByCity[r.a]||[]).push(r); (routesByCity[r.b]=routesByCity[r.b]||[]).push(r); });
+
+/* ================= 状态 ================= */
+function freshState(){
+  return {
+    seed:0, season:0, city:C.start_city, silver:C.start_silver, debt:0,
+    cargo:{}, avgCost:{}, holdSeasons:{}, prices:{}, trend:{},
+    insured:false, dest:null, traveled:false,
+    bubbleOwned:false, bubbleTurns:0,
+    fate:C.fate_start, gameOver:false, ending:null, finalWealth:0,
+    log:[], metrics:{ trips:0, insuredTrips:0, robs:0, confiscated:0,
+      cities:new Set([C.start_city]), loanPeak:0, futuresSigned:0,
+      bubbleBought:false, lossHold:0 },
+    knowledge:[], seenCards:new Set(), seasonEvents:[], contracts:[]
+  };
+}
+let S = freshState();
+
+/* ================= 价格 ================= */
+function basePrice(city,good){ return C.goods.find(g=>g.id===good).base * cityById[city].mods[good]; }
+function initPrices(){
+  C.cities.forEach(c=>{ S.prices[c.id]={}; S.trend[c.id]={};
+    C.goods.forEach(g=>{ const t=basePrice(c.id,g.id);
+      S.prices[c.id][g.id]=Math.max(0.5, round1(t*(0.9+0.2*R())));
+      S.trend[c.id][g.id]=0; });
+  });
+}
+function seasonModifiers(){
+  const m={ grainAll:1,grainNorth:1,grainSouth:1,grainXian:1,grainBeijing:1,
+    sellAll:1,sellTax:1,saltAll:1,teaSaltDatong:1,silkTeaSouth:1,
+    goodsShengjing:1,goodsNorth:1,riskNorth:0,riskToBeijing:0,riskToShengjing:0,
+    riskToDatong:0,riskXianDatong:0,ironBonus:0,blockCity:null,bubbleOffer:false };
+  S.seasonEvents.forEach(ev=>{
+    if(ev.grain_all) m.grainAll*=ev.grain_all;
+    if(ev.grain_north) m.grainNorth*=ev.grain_north;
+    if(ev.grain_south) m.grainSouth*=ev.grain_south;
+    if(ev.grain_xian) m.grainXian*=ev.grain_xian;
+    if(ev.grain_beijing) m.grainBeijing*=ev.grain_beijing;
+    if(ev.sell_all) m.sellAll*=ev.sell_all;
+    if(ev.sell_tax) m.sellTax*=ev.sell_tax;
+    if(ev.salt_all) m.saltAll*=ev.salt_all;
+    if(ev.tea_salt_datong) m.teaSaltDatong*=ev.teaSaltDatong;
+    if(ev.silk_tea_south) m.silkTeaSouth*=ev.silkTeaSouth;
+    if(ev.goods_shengjing) m.goodsShengjing*=ev.goodsShengjing;
+    if(ev.goods_north) m.goodsNorth*=ev.goodsNorth;
+    if(ev.risk_north) m.riskNorth+=ev.risk_north;
+    if(ev.risk_to_beijing) m.riskToBeijing+=ev.risk_to_beijing;
+    if(ev.risk_to_shengjing) m.riskToShengjing+=ev.risk_to_shengjing;
+    if(ev.risk_to_datong) m.riskToDatong+=ev.risk_to_datong;
+    if(ev.risk_xian_datong) m.riskXianDatong+=ev.risk_xian_datong;
+    if(ev.iron_confiscate_bonus) m.ironBonus+=ev.iron_confiscate_bonus;
+    if(ev.block_city) m.blockCity=ev.block_city;
+    if(ev.bubble_offer) m.bubbleOffer=true;
+  });
+  C.scheduled.forEach(sd=>{ if(sd.season!==S.season) return;
+    if(sd.risk_bonus_north) m.riskNorth+=sd.risk_bonus_north;
+    if(sd.risk_to_beijing) m.riskToBeijing+=sd.risk_to_beijing;
+    if(sd.risk_north) m.riskNorth+=sd.risk_north;
+    if(sd.grain_north) m.grainNorth*=sd.grain_north;
+    if(sd.grain_beijing) m.grainBeijing*=sd.grain_beijing;
+    if(sd.goods_north) m.goodsNorth*=sd.goods_north;
+  });
+  return m;
+}
+function priceMod(city,good,m){
+  let k=1;
+  if(good==='grain'){ k*=m.grainAll;
+    if(cityById[city].region==='north') k*=m.grainNorth; else k*=m.grainSouth;
+    if(city==='xian') k*=m.grainXian; if(city==='beijing') k*=m.grainBeijing; }
+  if(good==='salt'){ k*=m.saltAll; if(city==='datong') k*=m.teaSaltDatong; }
+  if(good==='tea'){ if(city==='datong') k*=m.teaSaltDatong;
+    if(city==='yangzhou'||city==='hankou') k*=m.silkTeaSouth; }
+  if(good==='silk'){ if(city==='yangzhou'||city==='hankou') k*=m.silkTeaSouth; }
+  if(city==='shengjing') k*=m.goodsShengjing;
+  if(cityById[city].region==='north') k*=m.goodsNorth;
+  k*=m.sellAll;
+  k*=m.sellTax;
+  return k;
+}
+function stepPrices(){
+  const m=seasonModifiers();
+  C.cities.forEach(c=>{ C.goods.forEach(g=>{
+    const target=basePrice(c.id,g.id)*priceMod(c.id,g.id,m);
+    const vol=C.goods.find(x=>x.id===g.id).vol;
+    const noise=(R()+R()+R()-1.5)*vol*target;
+    const p=S.prices[c.id][g.id] + (target-S.prices[c.id][g.id])*C.mean_revert + noise;
+    S.trend[c.id][g.id]= p>S.prices[c.id][g.id]?1:(p<S.prices[c.id][g.id]?-1:0);
+    S.prices[c.id][g.id]=Math.max(0.5, round1(p));
+  });});
+}
+function routeRiskFor(r){
+  const m=seasonModifiers(); let risk=C.route_risk[r.risk];
+  if(r.a==='beijing'||r.b==='beijing') risk+=m.riskToBeijing;
+  if(r.a==='shengjing'||r.b==='shengjing') risk+=m.riskToShengjing;
+  if(r.a==='datong'||r.b==='datong') risk+=m.riskToDatong+m.riskXianDatong;
+  if(r.a==='xian'||r.b==='xian') risk+=m.riskXianDatong;
+  if(cityById[r.a].region==='north'&&cityById[r.b].region==='north') risk+=m.riskNorth;
+  return clamp(risk,0.02,0.85);
+}
+function riskLabel(risk){ return risk<0.13?'low':(risk<0.26?'med':'high'); }
+function riskName(risk){ return risk<0.13?'低':(risk<0.26?'中':'高'); }
+
+/* ================= 资产 ================= */
+function usedCap(){ let u=0; Object.keys(S.cargo).forEach(g=>u+=S.cargo[g]); return u; }
+function cargoValue(city){ city=city||S.city; let v=0; Object.keys(S.cargo).forEach(g=>v+=S.cargo[g]*S.prices[city][g]); return v; }
+function totalWealth(){ return S.silver + cargoValue(); }
+function log(t){ S.log.unshift(t); if(S.log.length>60) S.log.pop(); }
+
+/* ================= 弹窗队列 ================= */
+const modalQueue=[];
+function queueCard(id){ if(S.seenCards.has(id)) return; S.seenCards.add(id); S.knowledge.push(id); modalQueue.push({type:'card',id:id}); }
+function queueEvent(ev){ modalQueue.push({type:'event',ev:ev}); }
+function queueRobbery(insured,lost){ modalQueue.push({type:'robbery',insured:insured,lost:lost}); }
+function queueTutorial(){ modalQueue.push({type:'tutorial'}); }
+function pumpModal(){
+  if(modalQueue.length===0){ render(); return; }
+  const item=modalQueue.shift(); showModal(item);
+}
+function showModal(item){
+  if(item.type==='card'){
+    const w=C.wisdom.find(x=>x.id===item.id);
+    document.getElementById('ws-title').textContent='希勒小课堂 · '+w.title;
+    document.getElementById('ws-tags').innerHTML=w.tags.map(t=>'<span>'+t+'</span>').join('');
+    document.getElementById('ws-intuition').textContent=w.intuition;
+    document.getElementById('ws-formula').textContent=w.formula;
+    document.getElementById('ws-ming').textContent='大明映射：'+w.ming;
+    document.getElementById('ws-shiller').textContent=w.shiller;
+    document.getElementById('modal-wisdom').classList.add('active');
+  } else if(item.type==='event'){
+    document.getElementById('ev-title').textContent=item.ev.title;
+    document.getElementById('ev-body').textContent=item.ev.text;
+    document.getElementById('modal-event').classList.add('active');
+  } else if(item.type==='robbery'){
+    document.getElementById('ev-title').textContent='⚠ 商路遇劫';
+    document.getElementById('ev-body').textContent=(item.insured?'镖局赔付八成，你仍损失约 ':'无保裸奔，货物损失约 ')+fmt(item.lost)+'两。'+(item.insured?'（免赔两成）':'');
+    document.getElementById('modal-event').classList.add('active');
+  } else if(item.type==='tutorial'){
+    document.getElementById('ev-title').textContent='掌柜的开局';
+    document.getElementById('ev-body').innerHTML='崇祯十六年春，你带着 <b>1000 两</b> 在京师开张。<br>目标：8 季内攒到 <b>4000 两</b>，活过王朝倾覆。<br><br>· 每季出行一次，商路风险会以「低/中/高」预告<br>· 镖局投保、钱庄借贷、汉口粮行青苗合约，任你取舍<br>· 每种机制第一次上手，会弹出「希勒小课堂」智慧卡<br>· 终局有知识体检报告<br><br>记住一句话：<b>王朝会覆灭，但懂得风险管理的商人能活下来。</b>';
+    document.getElementById('modal-event').classList.add('active');
+  }
+}
+
+/* ================= 市场买卖 ================= */
+function buyGood(g,qty){
+  const price=S.prices[S.city][g];
+  const avail=Math.min(qty, C.cargo_cap-usedCap(), Math.floor(S.silver/price));
+  if(avail<=0){ log('银两不足或库容已满'); return; }
+  S.silver-=Math.round(avail*price);
+  const old=S.cargo[g]||0, oldCost=S.avgCost[g]||0;
+  S.cargo[g]=old+avail;
+  S.avgCost[g]=(oldCost*old+avail*price)/(old+avail);
+  S.holdSeasons[g]=0;
+  log('购 '+goodById[g].name+'×'+avail+' @'+round1(price)+'两');
+  render();
+}
+function sellGood(g,qty){
+  const price=S.prices[S.city][g];
+  const have=S.cargo[g]||0; qty=Math.min(qty,have);
+  if(qty<=0){ log('无货可卖'); return; }
+  S.silver+=Math.round(qty*price);
+  S.cargo[g]=have-qty;
+  if(S.cargo[g]===0){ delete S.cargo[g]; delete S.avgCost[g]; delete S.holdSeasons[g]; }
+  log('售 '+goodById[g].name+'×'+qty+' @'+round1(price)+'两');
+  render();
+}
+
+/* ================= 出行与劫掠 ================= */
+function destCityOf(r){ return r.a===S.city?r.b:r.a; }
+function doTravel(){
+  if(S.traveled){ log('本季已出行'); return; }
+  if(!S.dest){ log('先选一条商路'); return; }
+  const r=S.dest, dest=destCityOf(r);
+  const cost=C.travel_base_cost+Math.round(C.travel_per_unit*usedCap());
+  if(S.silver<cost){ log('连盘缠都不够……'); return; }
+  S.silver-=cost;
+  const insured=document.getElementById('chk-ins').checked;
+  const val=cargoValue();
+  let premium=0;
+  if(insured){ premium=Math.round(val*C.insurance.premium);
+    if(S.silver<premium){ log('付不起保费（需要 '+fmt(premium)+'两）'); S.silver+=cost; return; }
+    S.silver-=premium; S.metrics.insuredTrips++;
+    if(!S.knowledge.includes('insurance')) queueCard('insurance'); }
+  S.metrics.trips++;
+  const risk=routeRiskFor(r);
+  log('出发：'+r.name+' → '+cityById[dest].name+'（风险'+riskName(risk)+' '+Math.round(risk*100)+'%）'+((insured?'，保费'+fmt(premium)+'两':'，未投保')));
+  if(!S.knowledge.includes('risk_premium')&&risk>=0.3) queueCard('risk_premium');
+  if(R()<risk){
+    S.metrics.robs++;
+    const lossRate=insured?(1-C.insurance.coverage):C.insurance.uninsured_loss;
+    let lost=0;
+    Object.keys(S.cargo).forEach(g=>{
+      const q=Math.floor(S.cargo[g]*lossRate);
+      S.cargo[g]-=q; lost+=q*S.prices[S.city][g];
+      if(S.cargo[g]<=0){ delete S.cargo[g]; delete S.avgCost[g]; delete S.holdSeasons[g]; }
+    });
+    log('⚠ 遭劫！'+(insured?'镖局赔付八成，仍损':'无保裸奔，货失')+'约 '+fmt(lost)+'两');
+    queueRobbery(insured,lost);
+  } else {
+    log('一路平安，抵达 '+cityById[dest].name);
+  }
+  if((S.cargo.iron||0)>0){
+    if(R()<C.iron_confiscate+seasonModifiers().ironBonus){
+      const q=S.cargo.iron; S.silver-=C.iron_fine; S.metrics.confiscated++;
+      delete S.cargo.iron; delete S.avgCost.iron; delete S.holdSeasons.iron;
+      log('⚠ 兵甲被查获！没收'+q+'副，罚银'+C.iron_fine+'两');
+    }
+  }
+  S.city=dest; S.dest=null; S.traveled=true;
+  S.metrics.cities.add(S.city);
+  if(S.metrics.cities.size>=3&&!S.knowledge.includes('diversification')) queueCard('diversification');
+  render();
+  pumpModal();
+}
+
+/* ================= 钱庄 ================= */
+function borrowMax(){
+  const cap=Math.min(Math.floor(S.silver*C.loan.max_mult),C.loan.cap)-S.debt;
+  if(cap<=0){ log('已达借款上限'); return; }
+  S.silver+=cap; S.debt+=cap;
+  S.metrics.loanPeak=Math.max(S.metrics.loanPeak,S.debt);
+  if(!S.knowledge.includes('leverage')) queueCard('leverage');
+  log('借入 '+fmt(cap)+'两，负债 '+fmt(S.debt)+'两（季利10%）');
+  render();
+  pumpModal();
+}
+function repayAll(){
+  const pay=Math.min(S.debt,S.silver);
+  if(pay<=0){ log('无可还之款'); return; }
+  S.silver-=pay; S.debt-=pay;
+  log('还款 '+fmt(pay)+'两');
+  render();
+}
+
+/* ================= 青苗合约 ================= */
+function signFutures(){
+  if(S.city!=='hankou'){ log('只有汉口粮行收青苗合约'); return; }
+  if(S.contracts.length>=C.futures.contract_cap){ log('合约已满（最多2份）'); return; }
+  const P=round1(S.prices.hankou.grain*(1-C.futures.lock_markup));
+  S.contracts.push({P:P,Q:C.futures.q_max,signedSeason:S.season});
+  S.metrics.futuresSigned++;
+  if(!S.knowledge.includes('futures')) queueCard('futures');
+  log('签青苗合约：下季以 '+P+'两/石 预售米粮'+C.futures.q_max+'石（价跌你赚，价涨你亏）');
+  render();
+  pumpModal();
+}
+function settleFutures(){
+  if(!S.contracts.length) return;
+  const spot=S.prices.hankou.grain;
+  const due=S.contracts.filter(ct=>ct.signedSeason<S.season);
+  const rest=S.contracts.filter(ct=>ct.signedSeason>=S.season);
+  due.forEach(ct=>{
+    const amt=Math.round((ct.P-spot)*ct.Q);
+    S.silver+=amt;
+    log('青苗结算：'+(amt>=0?'盈 ':'亏 ')+fmt(Math.abs(amt))+'两（汉口米价'+round1(spot)+'两/石，锁价'+ct.P+'两/石）');
+  });
+  S.contracts=rest;
+}
+
+/* ================= 炒地（泡沫） ================= */
+function buyBubble(){
+  if(S.silver<C.bubble.cost){ log('买不起地契'); return; }
+  S.silver-=C.bubble.cost; S.bubbleOwned=true; S.bubbleTurns=0; S.metrics.bubbleBought=true;
+  log('购江南地契一份（300两）——来季可售450两');
+  render();
+  pumpModal();
+}
+function sellBubble(){
+  if(!S.bubbleOwned) return;
+  S.silver+=C.bubble.sell_next; S.bubbleOwned=false; S.bubbleTurns=0;
+  log('地契售出，得450两！你比最后一棒跑得快。');
+  render();
+}
+
+/* ================= 事件 ================= */
+function drawEvents(){
+  const list=[];
+  const pool=C.events; const total=pool.reduce((s,e)=>s+e.weight,0);
+  let r=R()*total;
+  for(const ev of pool){ r-=ev.weight; if(r<0){ list.push(ev); break; } }
+  if(R()<0.3&&pool.length>1){
+    let second=null; let tries=0;
+    while(!second&&tries<8){ const ev=pool[ri(pool.length)]; if(!list.includes(ev)) second=ev; tries++; }
+    if(second) list.push(second);
+  }
+  S.seasonEvents=list;
+  list.forEach(ev=>{
+    if(ev.cash_loss){ const loss=Math.round(S.silver*ev.cash_loss); S.silver-=loss;
+      log('⚠ '+ev.title+'：现银受损约 '+fmt(loss)+'两'); }
+    if(ev.card&&!S.knowledge.includes(ev.card)) queueCard(ev.card);
+    queueEvent(ev);
+  });
+  if(list.some(ev=>ev.fate)){ list.forEach(ev=>{ if(ev.fate) S.fate+=ev.fate; }); }
+}
+
+/* ================= 行为金融检查 ================= */
+function behavioralCheck(){
+  let held=0;
+  Object.keys(S.cargo).forEach(g=>{
+    S.holdSeasons[g]=(S.holdSeasons[g]||0)+1;
+    if(S.holdSeasons[g]>=2&&S.prices[S.city][g]<(S.avgCost[g]||0)) held++;
+  });
+  if(held>=1){ S.metrics.lossHold+=held; }
+  if(S.metrics.lossHold>=2&&!S.knowledge.includes('behavioral')) queueCard('behavioral');
+}
+
+/* ================= 季末/终局 ================= */
+function solvent(){ return (S.silver+cargoValue())>=S.debt-1e-9; }
+function endSeason(){
+  if(S.debt>0){ const interest=Math.round(S.debt*C.loan.rate); S.debt+=interest;
+    log('钱庄计息 +'+fmt(interest)+'两，负债 '+fmt(S.debt)+'两');
+    S.metrics.loanPeak=Math.max(S.metrics.loanPeak,S.debt); }
+  settleFutures();
+  behavioralCheck();
+  if(!solvent()){
+    Object.keys(S.cargo).forEach(g=>{ S.silver+=Math.round(S.cargo[g]*S.prices[S.city][g]*C.loan.forced_sell_price); delete S.cargo[g]; });
+    log('⚠ 资不抵债，钱庄强押货物抵债！');
+    if(!solvent()){ S.gameOver=true; S.ending='bankrupt'; render(); showEnd(); return; }
+  }
+  drawEvents();
+  if(S.bubbleOwned){ S.bubbleTurns++;
+    if(S.bubbleTurns>=C.bubble.hold_seasons){ S.bubbleOwned=false; S.bubbleTurns=0; S.silver+=C.bubble.crash_value;
+      log('⚠ 江南地契崩盘！只值百两，账面归零。'); } }
+  S.fate=clamp(S.fate-C.fate_decay,0,100);
+  S.season++;
+  S.traveled=false;
+  if(S.season>=C.seasons){ settleFutures(); S.gameOver=true; render(); showEnd(); return; }
+  stepPrices();
+  C.scheduled.forEach(sd=>{ if(sd.season===S.season){ if(sd.fate) S.fate=clamp(S.fate+sd.fate,0,100); queueEvent({title:sd.title,text:sd.text}); } });
+  render();
+  pumpModal();
+}
+function finalWealthCalc(){
+  let w=totalWealth();
+  if(cityById[S.city].region==='north') w=Math.round(w*C.north_discount);
+  w=Math.round(w-S.debt);
+  return Math.max(0,w);
+}
+function showEnd(){
+  S.finalWealth=finalWealthCalc();
+  const w=S.finalWealth;
+  const flavor = S.ending==='bankrupt'
+    ? '账本清零，债台高筑。王朝倒了，你也倒了——其实，本可以只倒一个。'
+    : '崇祯十七年秋，紫禁城陷，大明国祚二百七十六年而终。清军入关，天下易主——而你的账本，比王朝活得更久。';
+  document.getElementById('end-flavor').textContent=flavor;
+  const g = w<=0?'破产':(w<1000?'落魄商贾':(w<4000?'乱世掌柜':(w<10000?'一方大贾':(w<20000?'巨贾':'富可敌国 · 商圣'))));
+  document.getElementById('end-grade').textContent='最终评级：'+g;
+  document.getElementById('end-wealth').textContent=fmt(w)+' 两';
+  const sub = S.ending==='bankrupt'?'（破产终局：负债超过全部资产）':'（活过了王朝倾覆）';
+  document.getElementById('end-sub').textContent=sub;
+  // 体检
+  const trips=S.metrics.trips||1;
+  const diag=[
+    { k:'保险意识', v:(S.metrics.insuredTrips/trips>=0.4)?'投保积极：你把大损失换成了小保费——深谙风险共担。':'多数商路裸奔：省下的保费，是拿身家去赌。' },
+    { k:'商路分散', v:(S.metrics.cities.size>=4)?('足迹遍布 '+S.metrics.cities.size+' 城，商路多元，抗风险能力强。'):(S.metrics.cities.size<=2?'只在 '+S.metrics.cities.size+' 城间打转——鸡蛋都在一个篮子里。':'到过 '+S.metrics.cities.size+' 城，可以更分散些。') },
+    { k:'杠杆纪律', v:(S.metrics.loanPeak<=500)?'几乎不借钱：你懂得杠杆是双刃剑。':(S.metrics.loanPeak<=2000)?('用过杠杆但克制（峰值 '+fmt(S.metrics.loanPeak)+'两）。'):('负债峰值达 '+fmt(S.metrics.loanPeak)+'两——刀尖上跳舞，运气好而已。') },
+    { k:'对冲意识', v:(S.metrics.futuresSigned>=1)?'会签青苗合约锁价，对冲意识在线。':'从未接触远期合约——少了一件防身利器。' },
+    { k:'泡沫警惕', v:S.metrics.bubbleBought?'你参与了江南炒地……记得吗，价格 ≠ 价值。':'面对炒地诱惑你按兵不动，躲过了击鼓传花。' },
+    { k:'行为纪律', v:(S.metrics.lossHold>=1)?'套牢时死扛 '+S.metrics.lossHold+' 次——处置效应，人性使然。':'止损果断，没被沉没成本拖住。' }
+  ];
+  document.getElementById('end-diag').innerHTML=diag.map(d=>'<div class="ditem"><b>'+d.k+'</b><br>'+d.v+'</div>').join('');
+  const knowIds=['insurance','risk_premium','diversification','leverage','futures','bubble','money','behavioral','fiscal'];
+  const got=S.knowledge.filter(id=>knowIds.includes(id));
+  document.getElementById('end-know').innerHTML=got.length?got.map(id=>{const w2=C.wisdom.find(x=>x.id===id);return '<span>'+w2.title+'</span>';}).join(''):'<span class="muted">本局未触发任何智慧卡</span>';
+  const missing=knowIds.filter(id=>!S.knowledge.includes(id));
+  document.getElementById('end-missing').textContent=missing.length?('尚未触碰的概念：'+missing.map(id=>C.wisdom.find(x=>x.id===id).title).join('、')+'。再来一局，去镖局、钱庄、粮行和高风险商路看看。'):'九张智慧卡全部点亮——你已经把课程吃进去了。';
+  switchScreen('screen-end');
+}
+
+/* ================= 渲染 ================= */
+function $(id){ return document.getElementById(id); }
+function el(tag,cls,html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
+function render(){
+  // 顶栏
+  $('st-season').textContent=C.season_labels[S.season];
+  $('st-city').textContent=cityById[S.city].name;
+  $('st-fate').textContent=S.fate;
+  $('st-silver').textContent=fmt(S.silver);
+  $('st-debt').textContent=S.debt?fmt(S.debt)+' 两':'—';
+  $('st-wealth').textContent=fmt(totalWealth())+' 两';
+  $('st-cap').textContent=usedCap()+'/'+C.cargo_cap;
+  $('fate-fill').style.width=Math.max(0,Math.min(100,S.fate/C.fate_start*100))+'%';
+  // 商路
+  const m=seasonModifiers();
+  const list=$('route-list'); list.innerHTML='';
+  const blocked=m.blockCity;
+  let routes=(routesByCity[S.city]||[]).filter(r=>destCityOf(r)!==blocked);
+  if(blocked===S.city){ routes=[]; }
+  if(!routes.length){ list.appendChild(el('div','hint','（本季商路断绝，只能休整买卖）')); }
+  routes.forEach(r=>{
+    const dest=destCityOf(r); const risk=routeRiskFor(r); const lbl=riskLabel(risk);
+    const item=el('div','route-item'+(S.dest===r?' selected':''));
+    const margins=[];
+    C.goods.forEach(g=>{ const buy=S.prices[S.city][g.id], sell=S.prices[dest][g.id];
+      const ratio=sell/buy; if(ratio>1.05&&buy>0) margins.push({g:g.name,ratio:ratio}); });
+    margins.sort((a,b)=>b.ratio-a.ratio);
+    const top=margins.slice(0,2).map(x=>'<span class="muted" style="font-size:11px;">'+x.g+' '+x.ratio.toFixed(2)+'×</span>').join(' ');
+    item.innerHTML='<div class="rhead"><span class="rname">'+r.name+'</span><span class="badge '+lbl+'">风险'+riskName(risk)+' '+(Math.round(risk*100))+'%</span></div>'+
+      '<div style="font-size:12px;" class="muted">→ '+cityById[dest].name+' · '+cityById[dest].desc+'</div>'+(top?'<div>'+top+'</div>':'<div class="muted" style="font-size:11px;">暂无明显利差</div>');
+    item.addEventListener('click',()=>{ S.dest=(S.dest===r?null:r); render(); });
+    list.appendChild(item);
+  });
+  const insPremium=Math.round(cargoValue()*C.insurance.premium);
+  $('ins-cost').textContent='投保保费 ≈ '+fmt(insPremium)+'两（被劫赔付八成；裸奔被劫损失七成）';
+  $('chk-ins').disabled=S.traveled;
+  $('btn-go').disabled=S.traveled||!routes.length;
+  // 市场
+  $('market-title').textContent=cityById[S.city].name+' · 市价';
+  const tb=$('market-body'); tb.innerHTML='';
+  C.goods.forEach(g=>{
+    const price=S.prices[S.city][g.id];
+    const tr=el('tr','');
+    const trend=S.trend[S.city][g.id];
+    const tmark=trend>0?'▲':'▼';
+    const tcls=trend>0?'up':(trend<0?'down':'flat');
+    tr.innerHTML='<td>'+g.name+'<br><span class="muted" style="font-size:11px;">'+g.desc+'</span></td>'+
+      '<td class="num">'+round1(price)+'</td>'+
+      '<td class="'+tcls+'">'+tmark+'</td>'+
+      '<td class="num">'+(S.cargo[g.id]||0)+'</td>'+
+      '<td><div class="qty-btns">'+
+      '<button data-act="b1" data-g="'+g.id+'">买1</button>'+
+      '<button data-act="b5" data-g="'+g.id+'">买5</button>'+
+      '<button data-act="bmax" data-g="'+g.id+'">买满</button>'+
+      '<button data-act="s1" data-g="'+g.id+'">卖1</button>'+
+      '<button data-act="sall" data-g="'+g.id+'">卖完</button>'+
+      '</div></td>';
+    tb.appendChild(tr);
+  });
+  // 季节速览
+  const evText=S.seasonEvents.length?('本季事件：'+S.seasonEvents.map(e=>e.title).join('、')):'本季暂无大事';
+  $('season-info').innerHTML='第 '+(S.season+1)+' / '+C.seasons+' 季 · 大明气数 '+S.fate+'<br><span class="muted">'+evText+'</span>';
+  const cl=$('cargo-list'); cl.innerHTML='';
+  const keys=Object.keys(S.cargo);
+  if(!keys.length){ cl.innerHTML='<span class="muted">货仓空空</span>'; }
+  else keys.forEach(g=>{
+    const cost=S.avgCost[g]||0, now=S.prices[S.city][g];
+    const pnl=now>=cost?'盈':'亏';
+    cl.innerHTML+='<div style="display:flex; justify-content:space-between; font-size:13px;">'+
+      '<span>'+goodById[g].name+' ×'+S.cargo[g]+'</span>'+
+      '<span class="'+pnl+'">'+pnl+' '+(Math.round(Math.abs(now-cost)*100)/100)+'两/件</span></div>';
+  });
+  // 钱庄
+  $('loan-info').textContent=S.debt?('负债 '+fmt(S.debt)+'两 · 季利10% · 下季计息 '+fmt(Math.round(S.debt*C.loan.rate))+'两'):'无负债 · 可借至 '+fmt(Math.min(Math.floor(S.silver*C.loan.max_mult),C.loan.cap))+' 两';
+  $('btn-borrow').disabled=S.traveled&&false; // 钱庄随时可借
+  // 粮行
+  const fp=$('futures-panel');
+  fp.style.display=(S.city==='hankou')?'block':'none';
+  if(S.city==='hankou'){ $('futures-msg').textContent='当前汉口米价 '+round1(S.prices.hankou.grain)+'两/石 · 锁定价 '+round1(S.prices.hankou.grain*(1+C.futures.lock_markup))+'两/石 · 合约 '+S.contracts.length+'/'+C.futures.contract_cap+'份'; }
+  const cl2=$('contract-list'); cl2.innerHTML='';
+  S.contracts.forEach(ct=>{ cl2.innerHTML+='<div class="contract">青苗合约：'+ct.Q+'石 @ '+ct.P+'两/石（下季按汉口市价结算）</div>'; });
+  if(m.bubbleOffer&&S.city==='yangzhou'&&!S.bubbleOwned){
+    cl2.innerHTML+='<div class="contract">【江南炒地】地契 '+C.bubble.cost+'两 一份，来季可售 '+C.bubble.sell_next+'两。<button id="btn-bubble-buy" class="gold" style="margin-left:8px;">购地契</button></div>';
+    const bb=$('btn-bubble-buy'); if(bb) bb.addEventListener('click',buyBubble);
+  }
+  if(S.bubbleOwned&&S.bubbleTurns>=1){
+    cl2.innerHTML+='<div class="contract">你持有江南地契（第'+S.bubbleTurns+'季）——<button id="btn-bubble-sell" class="gold">售地契 '+C.bubble.sell_next+'两</button></div>';
+    const bs=$('btn-bubble-sell'); if(bs) bs.addEventListener('click',sellBubble);
+  }
+  // 日志
+  const lg=$('log'); lg.innerHTML=S.log.slice(0,25).map(t=>'<p>'+t+'</p>').join('');
+  // 调试
+  $('dbg-seed').textContent=S.seed;
+  $('dbg-p1').textContent=C.insurance.premium+' / 赔付'+C.insurance.coverage+' / 裸损'+C.insurance.uninsured_loss;
+  $('dbg-p2').textContent=C.insurance.coverage+' / '+C.insurance.uninsured_loss;
+  $('dbg-p3').textContent=C.loan.rate+' / '+C.loan.cap;
+  $('dbg-p4').textContent=JSON.stringify(C.route_risk);
+  $('dbg-state').value=JSON.stringify({season:S.season, city:S.city, silver:S.silver, debt:S.debt, cargo:S.cargo, contracts:S.contracts, metrics:{trips:S.metrics.trips,insured:S.metrics.insuredTrips,robs:S.metrics.robs,cities:[...S.metrics.cities]}, knowledge:S.knowledge});
+}
+function switchScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(name).classList.add('active');
+}
+
+/* ================= SVG：商路地图 ================= */
+function drawMap(){
+  const svg=$('map-svg'); svg.innerHTML='';
+  const NS='http://www.w3.org/2000/svg';
+  C.routes.forEach(r=>{
+    const ca=cityById[r.a], cb=cityById[r.b];
+    const line=document.createElementNS(NS,'line');
+    line.setAttribute('x1',ca.x); line.setAttribute('y1',ca.y);
+    line.setAttribute('x2',cb.x); line.setAttribute('y2',cb.y);
+    line.setAttribute('stroke', r.risk==='low'?'#4a8f7a':(r.risk==='medium'?'#c9a961':'#b5403f'));
+    line.setAttribute('stroke-width','1.4'); line.setAttribute('opacity','0.75');
+    svg.appendChild(line);
+  });
+  C.cities.forEach(c=>{
+    const g=document.createElementNS(NS,'g');
+    const circle=document.createElementNS(NS,'circle');
+    circle.setAttribute('cx',c.x); circle.setAttribute('cy',c.y); circle.setAttribute('r','9');
+    circle.setAttribute('fill','#232936'); circle.setAttribute('stroke','#c9a961'); circle.setAttribute('stroke-width','1.5');
+    const txt=document.createElementNS(NS,'text');
+    txt.setAttribute('x',c.x); txt.setAttribute('y',c.y-15);
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('fill','#d8d3c8');
+    txt.setAttribute('font-size','14'); txt.textContent=c.name;
+    g.appendChild(circle); g.appendChild(txt); svg.appendChild(g);
+  });
+  const leg=document.createElementNS(NS,'g');
+  [['低风险','#4a8f7a'],['中风险','#c9a961'],['高风险','#b5403f']].forEach((p,i)=>{
+    const y=320+i*14;
+    const l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',20); l.setAttribute('y1',y); l.setAttribute('x2',44); l.setAttribute('y2',y);
+    l.setAttribute('stroke',p[1]); l.setAttribute('stroke-width','2');
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',52); t.setAttribute('y',y+4); t.setAttribute('fill','#8a867c'); t.setAttribute('font-size','12');
+    t.textContent=p[0];
+    leg.appendChild(l); leg.appendChild(t);
+  });
+  svg.appendChild(leg);
+}
+
+/* ================= SVG：知识图谱 ================= */
+function drawKG(){
+  const svg=$('kg-svg'); svg.innerHTML='';
+  const NS='http://www.w3.org/2000/svg';
+  const concepts=[
+    ['风险与保险','镖局船帮','保险精算'],
+    ['风险溢价','辽东商路','股票风险溢价'],
+    ['分散化','徽商多元经营','资产配置'],
+    ['杠杆与负债','钱庄九出十三归','融资融券'],
+    ['期货与对冲','青苗预卖','商品期货'],
+    ['泡沫与投机','江南炒地','资产泡沫'],
+    ['货币与通胀','宝钞贬值','央行印钞'],
+    ['行为金融','米市羊群','追涨杀跌'],
+    ['财政危机','三饷加派','主权债务']
+  ];
+  const colX=[140,450,760], rowY=40+40*0;
+  const h=520, n=concepts.length, step=(h-80)/(n-1);
+  const nodes=[];
+  concepts.forEach((row,ri)=>{
+    [0,1,2].forEach(ci=>{
+      const x=colX[ci], y=60+ri*step;
+      nodes.push({x:x,y:y,t:row[ci],col:ci,row:ri});
+    });
+  });
+  // edges
+  nodes.forEach(node=>{
+    if(node.col<2){
+      const peer=nodes.find(o=>o.col===node.col+1&&o.row===node.row);
+      if(peer){
+        const line=document.createElementNS(NS,'line');
+        line.setAttribute('x1',node.x+52); line.setAttribute('y1',node.y);
+        line.setAttribute('x2',peer.x-52); line.setAttribute('y2',peer.y);
+        line.setAttribute('stroke','#c9a961'); line.setAttribute('stroke-width','1');
+        line.setAttribute('opacity','0.4');
+        svg.appendChild(line);
+      }
+    }
+  });
+  // labels
+  nodes.forEach(node=>{
+    const g=document.createElementNS(NS,'g');
+    const rect=document.createElementNS(NS,'rect');
+    rect.setAttribute('x',node.x-52); rect.setAttribute('y',node.y-13);
+    rect.setAttribute('width','104'); rect.setAttribute('height','26'); rect.setAttribute('rx','5');
+    rect.setAttribute('fill', node.col===0?'#2a3040':(node.col===1?'#2b313c':'#22262f'));
+    rect.setAttribute('stroke', node.col===0?'#b5403f':(node.col===1?'#c9a961':'#4a8f7a'));
+    rect.setAttribute('stroke-width','1.2');
+    const txt=document.createElementNS(NS,'text');
+    txt.setAttribute('x',node.x); txt.setAttribute('y',node.y+5);
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('fill','#d8d3c8');
+    txt.setAttribute('font-size','13'); txt.textContent=node.t;
+    g.appendChild(rect); g.appendChild(txt); svg.appendChild(g);
+  });
+  const cols=['课程概念（希勒）','大明机制（日暮西山）','今日金融市场'];
+  cols.forEach((c,ci)=>{
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',colX[ci]); t.setAttribute('y',24);
+    t.setAttribute('text-anchor','middle'); t.setAttribute('fill','#c9a961');
+    t.setAttribute('font-size','15'); t.setAttribute('letter-spacing','2');
+    t.textContent=c;
+    svg.appendChild(t);
+  });
+}
+function renderKGList(){
+  $('kg-list').innerHTML=C.wisdom.map(w=>{
+    return '<div style="margin-bottom:10px;"><b style="color:var(--gold);">'+w.title+'</b> · '+w.intuition+'<br>'+
+      '<span class="muted" style="font-size:12.5px;">'+w.shiller+'</span></div>';
+  }).join('');
+}
+
+/* ================= 新局/事件绑定 ================= */
+function newGame(seed){
+  S=freshState();
+  if(seed==null) seed=(Date.now()^0x5bf03635)>>>0;
+  S.seed=seed>>>0;
+  rng=mulberry32(S.seed);
+  initPrices();
+  S.log=[];
+  log('崇祯十六年春，你在京师开张，本银1000两。');
+  queueTutorial();
+  switchScreen('screen-game');
+  render();
+  pumpModal();
+}
+function wire(){
+  $('btn-start').addEventListener('click',()=>newGame());
+  $('btn-again').addEventListener('click',()=>newGame());
+  $('btn-knowledge').addEventListener('click',()=>{ drawKG(); renderKGList(); switchScreen('screen-knowledge'); });
+  $('btn-knowledge2').addEventListener('click',()=>{ drawKG(); renderKGList(); switchScreen('screen-knowledge'); });
+  $('btn-end-kg').addEventListener('click',()=>{ drawKG(); renderKGList(); switchScreen('screen-knowledge'); });
+  $('btn-kg-back').addEventListener('click',()=>{ if(S.gameOver) switchScreen('screen-end'); else switchScreen('screen-game'); });
+  $('btn-go').addEventListener('click',doTravel);
+  $('btn-borrow').addEventListener('click',borrowMax);
+  $('btn-repay').addEventListener('click',repayAll);
+  $('btn-futures').addEventListener('click',signFutures);
+  $('btn-end').addEventListener('click',endSeason);
+  $('btn-ev-ok').addEventListener('click',()=>{ $('modal-event').classList.remove('active'); pumpModal(); });
+  $('btn-ws-ok').addEventListener('click',()=>{ $('modal-wisdom').classList.remove('active'); pumpModal(); });
+  document.addEventListener('click',(e)=>{
+    const btn=e.target.closest('button[data-act]');
+    if(!btn) return;
+    const g=btn.dataset.g, act=btn.dataset.act;
+    if(act==='b1') buyGood(g,1);
+    else if(act==='b5') buyGood(g,5);
+    else if(act==='bmax') buyGood(g,9999);
+    else if(act==='s1') sellGood(g,1);
+    else if(act==='sall') sellGood(g,9999);
+  });
+  // 调试：固定种子重开
+  const d=$('debug');
+  const seedRow=document.createElement('div'); seedRow.className='row'; seedRow.style.marginTop='6px';
+  seedRow.innerHTML='<span class="hint">固定种子</span><input type="number" id="dbg-seed-input" value="1"><button id="btn-dbg-restart" class="gold">重开(此种子)</button>';
+  d.querySelector('.dbg-body').appendChild(seedRow);
+  $('btn-dbg-restart').addEventListener('click',()=>{ const v=parseInt($('dbg-seed-input').value)||1; newGame(v); });
+  drawMap();
+  newGame(1);
+}
+wire();
+</script>
+</body>
+</html>

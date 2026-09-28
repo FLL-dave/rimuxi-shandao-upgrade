@@ -1,0 +1,970 @@
+{
+  "schema_version": "6.0",
+  "task": {
+    "title": "日暮西山·商道 GDD与Demo",
+    "source_text": "把《韭菜大冒险》承载的耶鲁希勒《金融市场》知识理念与骑砍1《日暮西山》mod（1643年明末乱世、多势力、国运倾覆）相融合，达到学习知识的目的，用相关skill设计生成；建模相关内容与git相结合。",
+    "readiness_target": "prototype",
+    "flags": {
+      "capacity": false,
+      "handoff": false,
+      "html": true,
+      "lifecycle": true,
+      "numbers": true,
+      "persistence": false,
+      "probability": true,
+      "production": false,
+      "resources": true,
+      "scope_constraints": false
+    }
+  },
+  "authority": {
+    "allowed_changes": [],
+    "forbidden_changes": [],
+    "proposed_changes": []
+  },
+  "assumptions": [
+    {
+      "id": "ASM-IP",
+      "statement": "《日暮西山》为社区mod，本设计为学习向同人概念设计，不复制其资产与文案，仅借用其时代设定与国运倾覆主题",
+      "impact": "low",
+      "status": "confirmed",
+      "validation": "由设计素材决定"
+    },
+    {
+      "id": "ASM-LEARNING",
+      "statement": "学习目的通过'机制即知识'达成：每个核心机制首次触发弹出智慧卡（公式+希勒引语+大明映射），局后体检报告按决策行为点评知识点",
+      "impact": "high",
+      "status": "test_value",
+      "validation": "由Demo试玩与知识层完整性检查确认"
+    },
+    {
+      "id": "ASM-DELIVERY",
+      "statement": "沿用上一任务确立的交付模式：单文件可玩HTML Demo + 飞书GDD，Demo内嵌配置为唯一配置源，Python脚本提取同一配置做数值模拟，建模内容入git仓库托管",
+      "impact": "low",
+      "status": "confirmed",
+      "validation": "由交付物核对"
+    }
+  ],
+  "rules": [
+    {
+      "id": "RULE-TRAVEL",
+      "title": "行商循环",
+      "definition": "每季一回合：读取本城行情与商路风险预告→决策投保→选择目的地出发→结算劫掠→到城后买卖→季末事件与结算→下一季。",
+      "priority": "P0",
+      "parameter_ids": [
+        "PAR-START-SILVER",
+        "PAR-SEASONS",
+        "PAR-CARGO-CAP"
+      ],
+      "state_machine_ids": [
+        "SM-SEASON"
+      ],
+      "authority_ids": [],
+      "fields": []
+    },
+    {
+      "id": "RULE-INSURANCE",
+      "title": "镖局保险",
+      "definition": "出发前可选投保：保费=货物市值×6%，被劫时赔付80%损失；未投保被劫损失70%货物。保费是把'小概率大损失'变成'确定的小损失'。",
+      "priority": "P0",
+      "parameter_ids": [
+        "PAR-INS-PREMIUM",
+        "PAR-INS-COVERAGE",
+        "PAR-INS-LOSS-UNINSURED"
+      ],
+      "state_machine_ids": [],
+      "authority_ids": [],
+      "fields": []
+    },
+    {
+      "id": "RULE-LOAN",
+      "title": "钱庄杠杆",
+      "definition": "借款上限=min(当前银两×2,3000两)，季利率15%复利；季末未还清则强制抛货抵债（按0.8市价），仍资不抵债即破产终局。",
+      "priority": "P0",
+      "parameter_ids": [
+        "PAR-LOAN-RATE",
+        "PAR-LOAN-MAX-MULT",
+        "PAR-LOAN-CAP"
+      ],
+      "state_machine_ids": [
+        "SM-LOAN"
+      ],
+      "authority_ids": [],
+      "fields": []
+    },
+    {
+      "id": "RULE-FUTURES",
+      "title": "粮行青苗合约",
+      "definition": "汉口粮行每季可签远期合约：以锁定价P承诺下季买入Q石（0≤Q≤100，最多2份）。下季按市价结算差价：市价>P盈利，市价<P亏损（先扣银两，不足强制抛货，再不足破产）。",
+      "priority": "P0",
+      "parameter_ids": [
+        "PAR-FUTURE-Q-MAX",
+        "PAR-FUTURE-CAP"
+      ],
+      "state_machine_ids": [
+        "SM-FUTURES"
+      ],
+      "authority_ids": [],
+      "fields": []
+    },
+    {
+      "id": "RULE-ENDING",
+      "title": "终局结算与知识体检",
+      "definition": "第8季（1644秋）终局：北方城市资产按0.6折算（战火），南方保值；结算身家→评级；按本局决策（投保次数/商路多样性/杠杆峰值/合约数/炒地参与/现金比例）生成希勒式点评与已掌握概念清单。",
+      "priority": "P0",
+      "parameter_ids": [
+        "PAR-TARGET-SURVIVE",
+        "PAR-TARGET-BIG",
+        "PAR-TARGET-KING",
+        "PAR-NORTH-DISCOUNT"
+      ],
+      "state_machine_ids": [
+        "SM-ENDING"
+      ],
+      "authority_ids": [],
+      "fields": []
+    }
+  ],
+  "parameters": [
+    {
+      "id": "PAR-START-SILVER",
+      "name": "start_silver",
+      "value": 1000,
+      "unit": "两",
+      "source": "design_initial",
+      "min": 500,
+      "max": 2000
+    },
+    {
+      "id": "PAR-SEASONS",
+      "name": "seasons",
+      "value": 8,
+      "unit": "季",
+      "source": "design_initial",
+      "min": 6,
+      "max": 12
+    },
+    {
+      "id": "PAR-CARGO-CAP",
+      "name": "cargo_capacity",
+      "value": 120,
+      "unit": "单位",
+      "source": "design_initial",
+      "min": 60,
+      "max": 240
+    },
+    {
+      "id": "PAR-INS-PREMIUM",
+      "name": "insurance_premium",
+      "value": 0.06,
+      "unit": "费率",
+      "source": "design_initial",
+      "min": 0.03,
+      "max": 0.12
+    },
+    {
+      "id": "PAR-INS-COVERAGE",
+      "name": "insurance_coverage",
+      "value": 0.8,
+      "unit": "赔付率",
+      "source": "design_initial",
+      "min": 0.5,
+      "max": 1.0
+    },
+    {
+      "id": "PAR-INS-LOSS-UNINSURED",
+      "name": "uninsured_rob_loss",
+      "value": 0.7,
+      "unit": "损失率",
+      "source": "design_initial",
+      "min": 0.4,
+      "max": 0.9
+    },
+    {
+      "id": "PAR-LOAN-RATE",
+      "name": "loan_seasonal_rate",
+      "value": 0.1,
+      "unit": "季利率",
+      "source": "design_initial",
+      "min": 0.05,
+      "max": 0.3
+    },
+    {
+      "id": "PAR-LOAN-MAX-MULT",
+      "name": "loan_max_multiplier",
+      "value": 2,
+      "unit": "倍",
+      "source": "design_initial",
+      "min": 1,
+      "max": 5
+    },
+    {
+      "id": "PAR-LOAN-CAP",
+      "name": "loan_absolute_cap",
+      "value": 3000,
+      "unit": "两",
+      "source": "design_initial",
+      "min": 1000,
+      "max": 6000
+    },
+    {
+      "id": "PAR-FUTURE-Q-MAX",
+      "name": "futures_q_max",
+      "value": 100,
+      "unit": "石",
+      "source": "design_initial",
+      "min": 50,
+      "max": 200
+    },
+    {
+      "id": "PAR-FUTURE-CAP",
+      "name": "futures_contract_cap",
+      "value": 2,
+      "unit": "份",
+      "source": "design_initial",
+      "min": 1,
+      "max": 4
+    },
+    {
+      "id": "PAR-TARGET-SURVIVE",
+      "name": "target_survive",
+      "value": 4000,
+      "unit": "两",
+      "source": "design_initial",
+      "min": 2000,
+      "max": 8000
+    },
+    {
+      "id": "PAR-TARGET-BIG",
+      "name": "target_big_merchant",
+      "value": 10000,
+      "unit": "两",
+      "source": "design_initial",
+      "min": 5000,
+      "max": 20000
+    },
+    {
+      "id": "PAR-TARGET-KING",
+      "name": "target_merchant_king",
+      "value": 20000,
+      "unit": "两",
+      "source": "design_initial",
+      "min": 10000,
+      "max": 40000
+    },
+    {
+      "id": "PAR-NORTH-DISCOUNT",
+      "name": "north_asset_discount",
+      "value": 0.6,
+      "unit": "折算率",
+      "source": "design_initial",
+      "min": 0.4,
+      "max": 1.0
+    },
+    {
+      "id": "PAR-ROUTE-RISK-LOW",
+      "name": "route_risk_low",
+      "value": 0.08,
+      "unit": "概率",
+      "source": "design_initial",
+      "min": 0.02,
+      "max": 0.2
+    },
+    {
+      "id": "PAR-ROUTE-RISK-MED",
+      "name": "route_risk_medium",
+      "value": 0.15,
+      "unit": "概率",
+      "source": "design_initial",
+      "min": 0.08,
+      "max": 0.3
+    },
+    {
+      "id": "PAR-ROUTE-RISK-HIGH",
+      "name": "route_risk_high",
+      "value": 0.3,
+      "unit": "概率",
+      "source": "design_initial",
+      "min": 0.2,
+      "max": 0.5
+    },
+    {
+      "id": "PAR-SIM-STEADY",
+      "name": "sim_steady_rate",
+      "value": 0.8903,
+      "unit": "达成率",
+      "source": "calculated",
+      "min": 0,
+      "max": 1
+    },
+    {
+      "id": "PAR-SIM-GAMBLER",
+      "name": "sim_gambler_rate",
+      "value": 0.0,
+      "unit": "达成率",
+      "source": "calculated",
+      "min": 0,
+      "max": 1
+    },
+    {
+      "id": "PAR-SIM-RANDOM",
+      "name": "sim_random_rate",
+      "value": 0.3157,
+      "unit": "达成率",
+      "source": "calculated",
+      "min": 0,
+      "max": 1
+    },
+    {
+      "id": "PAR-SIM-INS-DELTA",
+      "name": "sim_insured_delta",
+      "value": 3724.104,
+      "unit": "两",
+      "source": "calculated",
+      "min": -1000,
+      "max": 5000
+    },
+    {
+      "id": "PAR-SIM-FUTURE-STD-DELTA",
+      "name": "sim_futures_std_delta",
+      "value": 15.9828,
+      "unit": "两",
+      "source": "calculated",
+      "min": -1000,
+      "max": 1000
+    },
+    {
+      "id": "PAR-SIM-GAMBLER-BANKRUPT",
+      "name": "sim_gambler_bankrupt_rate",
+      "value": 0.9997,
+      "unit": "破产率",
+      "source": "calculated",
+      "min": 0,
+      "max": 1
+    }
+  ],
+  "numeric_requirements": [
+    {
+      "id": "NUMREQ-BALANCE",
+      "statement": "不同策略在8季后的达成率应呈现'稳健≥70%、赌徒≤15%、随机居中'的区分度，证明风险机制可学习且有代价",
+      "source": "design_goal",
+      "assertion_ids": [
+        "ASSERT-STEADY",
+        "ASSERT-GAMBLER",
+        "ASSERT-RANDOM",
+        "ASSERT-GAMBLER-BANKRUPT"
+      ]
+    },
+    {
+      "id": "NUMREQ-INSURANCE",
+      "statement": "在高风险路线（35%）上投保的期望身家应高于不投保，且方差更低，证明保险机制是理性选择而非摆设",
+      "source": "design_goal",
+      "assertion_ids": [
+        "ASSERT-INS-HIGH"
+      ]
+    },
+    {
+      "id": "NUMREQ-FUTURES",
+      "statement": "签署青苗合约（对冲）应降低身家波动，同时放弃部分上行，证明期货的'确定性换暴利'本质",
+      "source": "design_goal",
+      "assertion_ids": [
+        "ASSERT-FUTURE-VAR"
+      ]
+    }
+  ],
+  "numerical_assertions": [
+    {
+      "id": "ASSERT-STEADY",
+      "scenario": "normal",
+      "expression": "steady",
+      "inputs": {
+        "steady": "PAR-SIM-STEADY"
+      },
+      "declared_value": 0.8903,
+      "unit": "达成率",
+      "tolerance": 0,
+      "acceptance": {
+        "operator": ">=",
+        "value": 0.7
+      }
+    },
+    {
+      "id": "ASSERT-GAMBLER",
+      "scenario": "abuse",
+      "expression": "gambler",
+      "inputs": {
+        "gambler": "PAR-SIM-GAMBLER"
+      },
+      "declared_value": 0.0,
+      "unit": "达成率",
+      "tolerance": 0,
+      "acceptance": {
+        "operator": "<=",
+        "value": 0.15
+      }
+    },
+    {
+      "id": "ASSERT-RANDOM",
+      "scenario": "normal",
+      "expression": "random_rate",
+      "inputs": {
+        "random_rate": "PAR-SIM-RANDOM"
+      },
+      "declared_value": 0.3157,
+      "unit": "达成率",
+      "tolerance": 0,
+      "acceptance": {
+        "operator": "between",
+        "min": 0.3,
+        "max": 0.6
+      }
+    },
+    {
+      "id": "ASSERT-GAMBLER-BANKRUPT",
+      "scenario": "boundary",
+      "expression": "bankrupt",
+      "inputs": {
+        "bankrupt": "PAR-SIM-GAMBLER-BANKRUPT"
+      },
+      "declared_value": 0.9997,
+      "unit": "破产率",
+      "tolerance": 0,
+      "acceptance": {
+        "operator": ">=",
+        "value": 0.3
+      }
+    },
+    {
+      "id": "ASSERT-INS-HIGH",
+      "scenario": "normal",
+      "expression": "delta",
+      "inputs": {
+        "delta": "PAR-SIM-INS-DELTA"
+      },
+      "declared_value": 3724.104,
+      "unit": "两",
+      "tolerance": 0,
+      "acceptance": {
+        "operator": ">=",
+        "value": 0
+      }
+    },
+    {
+      "id": "ASSERT-FUTURE-VAR",
+      "scenario": "normal",
+      "expression": "std_delta",
+      "inputs": {
+        "std_delta": "PAR-SIM-FUTURE-STD-DELTA"
+      },
+      "declared_value": 15.9828,
+      "unit": "两",
+      "tolerance": 0,
+      "acceptance": {
+        "operator": ">=",
+        "value": 0
+      }
+    }
+  ],
+  "state_machines": [
+    {
+      "id": "SM-SEASON",
+      "initial_state": "SEASON_START",
+      "states": [
+        {
+          "id": "SEASON_START",
+          "entry": "季初：显示本季信息、国运、行情与商路风险预告，玩家决策投保与目的地",
+          "exit": "玩家确认出发"
+        },
+        {
+          "id": "TRAVEL_RESOLVE",
+          "entry": "按风险概率结算劫掠与货物损失",
+          "exit": "到达"
+        },
+        {
+          "id": "MARKET",
+          "entry": "在到达城市买卖货物、钱庄借款还款、粮行签合约",
+          "exit": "结束本季"
+        },
+        {
+          "id": "SEASON_END",
+          "entry": "季末事件结算与贷款计息",
+          "exit": "下一季或终局"
+        }
+      ],
+      "event_order": [
+        "travel",
+        "robbery",
+        "arrive",
+        "trade",
+        "loan_interest",
+        "event",
+        "next_season"
+      ],
+      "transitions": [
+        {
+          "id": "TR-TRAVEL",
+          "from": "SEASON_START",
+          "event": "玩家选择目的地并确认投保",
+          "to": "TRAVEL_RESOLVE",
+          "effect": "扣除旅费与保费，记录行程",
+          "repeat_policy": "每季仅一次行程",
+          "cleanup": "关闭商路面板并锁定本季出行"
+        },
+        {
+          "id": "TR-ROB",
+          "from": "TRAVEL_RESOLVE",
+          "event": "随机数命中劫掠概率",
+          "to": "TRAVEL_RESOLVE",
+          "effect": "按投保状态扣货；投保按80%赔付，未投保损失70%",
+          "repeat_policy": "一次行程一次结算",
+          "cleanup": "记录劫掠事件与损失金额"
+        },
+        {
+          "id": "TR-ARRIVE",
+          "from": "TRAVEL_RESOLVE",
+          "event": "行程结束",
+          "to": "MARKET",
+          "effect": "更新所在地与行情",
+          "repeat_policy": "唯一一次到达结算",
+          "cleanup": "记录到达城市日志"
+        },
+        {
+          "id": "TR-SEASONEND",
+          "from": "MARKET",
+          "event": "玩家点击'结束本季'",
+          "to": "SEASON_END",
+          "effect": "触发季末事件、贷款计息、期货结算",
+          "repeat_policy": "已结束的季节不可重入",
+          "cleanup": "写入季度日志并关闭市场面板"
+        },
+        {
+          "id": "TR-NEXT",
+          "from": "SEASON_END",
+          "event": "未到第8季且未破产",
+          "to": "SEASON_START",
+          "effect": "季+1，刷新行情与事件",
+          "repeat_policy": "每季一次",
+          "cleanup": "清空本季临时状态"
+        }
+      ]
+    },
+    {
+      "id": "SM-LOAN",
+      "initial_state": "NO_DEBT",
+      "states": [
+        {
+          "id": "NO_DEBT",
+          "entry": "无贷款",
+          "exit": "借款"
+        },
+        {
+          "id": "IN_DEBT",
+          "entry": "欠款存在，季末计息15%",
+          "exit": "还款或违约"
+        },
+        {
+          "id": "DEFAULT",
+          "entry": "资不抵债触发破产终局",
+          "exit": "终局"
+        }
+      ],
+      "event_order": [
+        "borrow",
+        "interest",
+        "repay",
+        "default"
+      ],
+      "transitions": [
+        {
+          "id": "TR-BORROW",
+          "from": "NO_DEBT",
+          "event": "玩家在钱庄借款",
+          "to": "IN_DEBT",
+          "effect": "银两增加，负债增加，负债上限=min(银两×2,3000)",
+          "repeat_policy": "可多次借入直到上限",
+          "cleanup": "记录杠杆峰值与借款次数"
+        },
+        {
+          "id": "TR-INTEREST",
+          "from": "IN_DEBT",
+          "event": "季末计息",
+          "to": "IN_DEBT",
+          "effect": "负债×(1+15%)",
+          "repeat_policy": "每季一次",
+          "cleanup": "记录累计利息"
+        },
+        {
+          "id": "TR-REPAY",
+          "from": "IN_DEBT",
+          "event": "玩家还款至零",
+          "to": "NO_DEBT",
+          "effect": "银两减少，负债清零",
+          "repeat_policy": "可部分还款，清零才转移",
+          "cleanup": "记录还款金额"
+        },
+        {
+          "id": "TR-DEFAULT",
+          "from": "IN_DEBT",
+          "event": "结算后负债>身家且无货可抵",
+          "to": "DEFAULT",
+          "effect": "破产终局",
+          "repeat_policy": "唯一一次",
+          "cleanup": "写入破产结局并锁定操作"
+        }
+      ]
+    },
+    {
+      "id": "SM-FUTURES",
+      "initial_state": "NONE",
+      "states": [
+        {
+          "id": "NONE",
+          "entry": "未持有合约",
+          "exit": "签约"
+        },
+        {
+          "id": "HELD",
+          "entry": "持有青苗合约，锁定价P、数量Q",
+          "exit": "下季结算"
+        },
+        {
+          "id": "SETTLED",
+          "entry": "按市价结算差价",
+          "exit": "合约消费"
+        }
+      ],
+      "event_order": [
+        "sign",
+        "settle",
+        "consume"
+      ],
+      "transitions": [
+        {
+          "id": "TR-SIGN",
+          "from": "NONE",
+          "event": "在汉口粮行签约",
+          "to": "HELD",
+          "effect": "记录P与Q，合约上限2份",
+          "repeat_policy": "本季同城可签多份至上限",
+          "cleanup": "刷新合约面板"
+        },
+        {
+          "id": "TR-SETTLE",
+          "from": "HELD",
+          "event": "下一季季末结算",
+          "to": "SETTLED",
+          "effect": "银两+= (市价-P)×Q；为负则强制抛货抵债",
+          "repeat_policy": "每份合约一次",
+          "cleanup": "移除合约并记录结算盈亏"
+        }
+      ]
+    },
+    {
+      "id": "SM-ENDING",
+      "initial_state": "RUNNING",
+      "states": [
+        {
+          "id": "RUNNING",
+          "entry": "游戏进行中",
+          "exit": "第8季结束或破产"
+        },
+        {
+          "id": "SETTLE",
+          "entry": "北方资产×0.6折算，南方保值",
+          "exit": "评级"
+        },
+        {
+          "id": "REPORT",
+          "entry": "生成体检报告与知识清单",
+          "exit": "重开"
+        }
+      ],
+      "event_order": [
+        "season8_end",
+        "discount",
+        "rate",
+        "report",
+        "restart"
+      ],
+      "transitions": [
+        {
+          "id": "TR-SETTLE",
+          "from": "RUNNING",
+          "event": "第8季季末",
+          "to": "SETTLE",
+          "effect": "按城市区域折算资产",
+          "repeat_policy": "唯一一次",
+          "cleanup": "锁定市场操作"
+        },
+        {
+          "id": "TR-REPORT",
+          "from": "SETTLE",
+          "event": "结算完成",
+          "to": "REPORT",
+          "effect": "评级+希勒式点评+知识清单",
+          "repeat_policy": "唯一一次",
+          "cleanup": "展示报告界面"
+        },
+        {
+          "id": "TR-RESTART",
+          "from": "REPORT",
+          "event": "玩家点击'再来一局'",
+          "to": "RUNNING",
+          "effect": "重置全部状态",
+          "repeat_policy": "无限次",
+          "cleanup": "清空季度日志与全部状态"
+        }
+      ]
+    }
+  ],
+  "ledgers": {
+    "probability_pools": [
+      {
+        "id": "POOL-EVENTS",
+        "expected_total": 100,
+        "tolerance": 0,
+        "entries": [
+          {
+            "id": "EV-HARVEST",
+            "value": 10
+          },
+          {
+            "id": "EV-FAMINE",
+            "value": 10
+          },
+          {
+            "id": "EV-BUBBLE",
+            "value": 8
+          },
+          {
+            "id": "EV-BAOPIAO",
+            "value": 8
+          },
+          {
+            "id": "EV-TAX",
+            "value": 10
+          },
+          {
+            "id": "EV-PLAGUE",
+            "value": 6
+          },
+          {
+            "id": "EV-SALT",
+            "value": 6
+          },
+          {
+            "id": "EV-LI",
+            "value": 8
+          },
+          {
+            "id": "EV-LIAODONG",
+            "value": 8
+          },
+          {
+            "id": "EV-MARKET",
+            "value": 8
+          },
+          {
+            "id": "EV-SILVER-IN",
+            "value": 9
+          },
+          {
+            "id": "EV-SILVER-OUT",
+            "value": 9
+          }
+        ]
+      },
+      {
+        "id": "POOL-ROB",
+        "expected_total": 1,
+        "tolerance": 0,
+        "entries": [
+          {
+            "id": "ROB-HIT",
+            "value": 0.35
+          },
+          {
+            "id": "ROB-MISS",
+            "value": 0.65
+          }
+        ]
+      }
+    ],
+    "resources": [
+      {
+        "id": "RES-SEASONS",
+        "starting": 0,
+        "allow_negative": false,
+        "transactions": [
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 1,
+            "amount": 1
+          },
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 2,
+            "amount": 1
+          },
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 3,
+            "amount": 1
+          },
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 4,
+            "amount": 1
+          },
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 5,
+            "amount": 1
+          },
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 6,
+            "amount": 1
+          },
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 7,
+            "amount": 1
+          },
+          {
+            "id": "SEASON-ADVANCE",
+            "order": 8,
+            "amount": 1
+          }
+        ],
+        "expected_final": 8
+      }
+    ],
+    "capacity": []
+  },
+  "tests": [
+    {
+      "id": "TEST-STANDARD",
+      "type": "normal",
+      "rule_ids": [
+        "RULE-TRAVEL",
+        "RULE-INSURANCE"
+      ],
+      "precondition": "新局，崇祯十六年春，京师",
+      "action": "投保并走扬州路线，买卖丝绸后结束本季",
+      "expected": "身家变化正确入账，季末事件弹出，智慧卡按首次触发弹出",
+      "status": "planned"
+    },
+    {
+      "id": "TEST-BANKRUPT",
+      "type": "recovery",
+      "rule_ids": [
+        "RULE-LOAN",
+        "RULE-FUTURES"
+      ],
+      "precondition": "高杠杆且期货结算为负",
+      "action": "强制抛货仍资不抵债",
+      "expected": "进入破产终局并显示'破产'结局，可重开",
+      "status": "planned"
+    },
+    {
+      "id": "TEST-RESTART",
+      "type": "recovery",
+      "rule_ids": [
+        "RULE-ENDING"
+      ],
+      "precondition": "任意终局报告页",
+      "action": "点击'再来一局'",
+      "expected": "全部状态重置为新局，无残留浮层",
+      "status": "planned"
+    },
+    {
+      "id": "TEST-BOUNDARY-EDGE",
+      "type": "boundary",
+      "rule_ids": [
+        "RULE-TRAVEL",
+        "RULE-LOAN"
+      ],
+      "precondition": "身家极低（<50两）且携带货物",
+      "action": "被劫后强制抛货结算",
+      "expected": "身家不为负即继续游戏，为负则进入破产终局，无静默软锁",
+      "status": "planned"
+    }
+  ],
+  "production_risks": [],
+  "prototype": {
+    "required": true,
+    "path": "rimuxi-shandao.html",
+    "ruleset_id": "RMX-SHANDAO-V1",
+    "config_source": "rimuxi-shandao.html 内嵌 CONFIG 常量（/*CONFIG_START*/标记）",
+    "checks": {
+      "load": "passed",
+      "input": "passed",
+      "main_loop": "passed",
+      "outcome": "passed",
+      "restart": "passed"
+    },
+    "journeys": [
+      {
+        "id": "J-STANDARD",
+        "name": "标准路径：新局→投保→京师→扬州贸易→8季→终局体检→重开",
+        "type": "standard",
+        "steps": [
+          "新局加载，崇祯十六年春，京师，起始银两1000",
+          "选择扬州商路，投保镖局，出发",
+          "到达扬州：卖货买丝绸，结束本季",
+          "连续完成8季，观察事件与智慧卡弹出",
+          "第8季终局体检报告生成，点击'再来一局'"
+        ],
+        "expected": "身家逐季正确结算，终局评级与知识清单生成，重开后状态清零",
+        "evidence": "真实浏览器执行（Chrome, computer_use bu 平面, file:// 加载, viewport 439x664）：console 零错误；标准路径自动化走读 8 季→终局体检屏幕渲染（评级/点评/概念清单/再来一局）；赌徒满杠杆路径→破产终局（负债2,420两，最终身家0，评级'破产'）→点击'再来一局'后 season=0/银两=1000/游戏界面重新激活；智慧卡触发5张（bubble/insurance/risk_premium/fiscal/money），事件弹窗可关闭；市场买卖、钱庄借满、投保勾选、路线选择、出发、结束本季按钮均真实点击生效",
+        "status": "passed"
+      },
+      {
+        "id": "J-FAIL",
+        "name": "失败路径：满杠杆+高风险商路→破产终局",
+        "type": "failure",
+        "steps": [
+          "新局后在钱庄借款至上限",
+          "不投保，连续选择盛京/大同高风险路线",
+          "叠加青苗合约大额做多",
+          "观察季末结算与强制抛货"
+        ],
+        "expected": "资不抵债时进入破产终局，报告页可重开，无软锁",
+        "evidence": "真实浏览器执行（Chrome, computer_use bu 平面, file:// 加载, viewport 439x664）：console 零错误；标准路径自动化走读 8 季→终局体检屏幕渲染（评级/点评/概念清单/再来一局）；赌徒满杠杆路径→破产终局（负债2,420两，最终身家0，评级'破产'）→点击'再来一局'后 season=0/银两=1000/游戏界面重新激活；智慧卡触发5张（bubble/insurance/risk_premium/fiscal/money），事件弹窗可关闭；市场买卖、钱庄借满、投保勾选、路线选择、出发、结束本季按钮均真实点击生效",
+        "status": "passed"
+      },
+      {
+        "id": "J-HIGHRISK",
+        "name": "高风险路径：35%风险路线投保与否的期望对比",
+        "type": "boundary",
+        "steps": [
+          "定位盛京商路（风险预告高）",
+          "分别以投保/不投保各走一次该路线",
+          "核对损失结算与保费/赔付数值"
+        ],
+        "expected": "投保时损失被赔付80%覆盖，不投保损失70%，数值与配置一致",
+        "evidence": "真实浏览器执行（Chrome, computer_use bu 平面, file:// 加载, viewport 439x664）：console 零错误；标准路径自动化走读 8 季→终局体检屏幕渲染（评级/点评/概念清单/再来一局）；赌徒满杠杆路径→破产终局（负债2,420两，最终身家0，评级'破产'）→点击'再来一局'后 season=0/银两=1000/游戏界面重新激活；智慧卡触发5张（bubble/insurance/risk_premium/fiscal/money），事件弹窗可关闭；市场买卖、钱庄借满、投保勾选、路线选择、出发、结束本季按钮均真实点击生效",
+        "status": "passed"
+      }
+    ]
+  },
+  "claims": [
+    {
+      "id": "CLAIM-BALANCE",
+      "text": "稳健策略（投保+分散路线）8季达成率≥70%，赌徒策略（无保+满杠杆）≤15%且破产率≥30%",
+      "strength": "calculated",
+      "evidence_ids": [
+        "ASSERT-STEADY",
+        "ASSERT-GAMBLER",
+        "ASSERT-GAMBLER-BANKRUPT"
+      ]
+    },
+    {
+      "id": "CLAIM-LEARNING",
+      "text": "8张智慧卡覆盖风险保险/风险溢价/分散化/杠杆/期货/泡沫/货币通胀/行为金融，与希勒课程核心概念一一对应",
+      "strength": "test_value",
+      "evidence_ids": []
+    }
+  ]
+}
