@@ -1,0 +1,144 @@
+<html style="margin:0;padding:0;">
+<title>日暮西山·商道——金融知识融合图谱</title>
+<div style="font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;background:#f6efe2;color:#3b2b20;padding:28px 20px 34px;line-height:1.6;">
+  <div style="max-width:1080px;margin:0 auto;">
+    <div style="border-bottom:3px solid #7e3b1e;padding-bottom:12px;margin-bottom:6px;">
+      <div style="font-size:26px;font-weight:700;color:#5d2a14;">金融知识融合图谱</div>
+      <div style="font-size:14px;color:#8a6d4f;margin-top:4px;">耶鲁《金融市场》课程概念 × 《日暮西山》大明机制 × mod 挂载点 —— 王朝会覆灭，但懂得风险管理的商人能活下来</div>
+    </div>
+    <div style="display:flex;gap:8px;font-size:12px;color:#5d2a14;margin:10px 0 14px;">
+      <span style="background:#7e3b1e;color:#f6efe2;padding:3px 10px;border-radius:10px;">风险转移工具</span>
+      <span style="background:#2b4a63;color:#f6efe2;padding:3px 10px;border-radius:10px;">杠杆与投机</span>
+      <span style="background:#6b6b5e;color:#f6efe2;padding:3px 10px;border-radius:10px;">宏观与行为</span>
+      <span style="margin-left:auto;color:#8a6d4f;">ruleset RMX-SHANDAO-V1 · 数值为原型权威配置</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:700;color:#5d2a14;padding:6px 10px;background:#e9dcc4;border-radius:6px;text-align:center;">课程概念（希勒要点）</div>
+      <div style="font-size:13px;font-weight:700;color:#5d2a14;padding:6px 10px;background:#e9dcc4;border-radius:6px;text-align:center;">大明机制（权威数值）</div>
+      <div style="font-size:13px;font-weight:700;color:#5d2a14;padding:6px 10px;background:#e9dcc4;border-radius:6px;text-align:center;">mod 挂载点（实改入口）</div>
+    </div>
+
+    <!-- 行模板：概念 | 机制 | 挂载 -->
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#fbf6ec;border-left:5px solid #7e3b1e;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">风险与保险</div>
+        <div style="font-size:11.5px;color:#6b5440;">把不可控损失变成可付的保费</div>
+      </div>
+      <div style="background:#fff;border:1px solid #d8c9ae;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#5d2a14;">镖局投保</span>
+        <span style="font-size:11.5px;background:#efe3cd;color:#5d2a14;padding:2px 8px;border-radius:9px;">保费 6% · 赔付 80% · 裸奔损失 70%</span>
+      </div>
+      <div style="background:#fbf6ec;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">商队出发界面<br/>scripts.txt 结算</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#fbf6ec;border-left:5px solid #7e3b1e;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">风险溢价</div>
+        <div style="font-size:11.5px;color:#6b5440;">高风险路线的回报必须更高</div>
+      </div>
+      <div style="background:#fff;border:1px solid #d8c9ae;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#5d2a14;">商路风险分级</span>
+        <span style="font-size:11.5px;background:#efe3cd;color:#5d2a14;padding:2px 8px;border-radius:9px;">低 8% / 中 15% / 高 30%</span>
+      </div>
+      <div style="background:#fbf6ec;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">商路价格生成<br/>update_trade_good_prices</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#eef4f8;border-left:5px solid #2b4a63;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">杠杆</div>
+        <div style="font-size:11.5px;color:#6b5440;">借钱放大收益，也放大破产概率</div>
+      </div>
+      <div style="background:#fff;border:1px solid #c9d6e0;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#27445c;">钱庄借贷</span>
+        <span style="font-size:11.5px;background:#dde8f0;color:#27445c;padding:2px 8px;border-radius:9px;">季利 10% · 上限 ×2 · 封顶 3,000</span>
+      </div>
+      <div style="background:#eef4f8;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">城镇钱庄菜单<br/>menus + scripts.txt</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#eef4f8;border-left:5px solid #2b4a63;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">期货与对冲</div>
+        <div style="font-size:11.5px;color:#6b5440;">锁价转移价格风险，非投机工具</div>
+      </div>
+      <div style="background:#fff;border:1px solid #c9d6e0;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#27445c;">青苗预售合约</span>
+        <span style="font-size:11.5px;background:#dde8f0;color:#27445c;padding:2px 8px;border-radius:9px;">锁价=市价×0.95 · 100石×2份 · 下季结算</span>
+      </div>
+      <div style="background:#eef4f8;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">汉口粮行<br/>scripts + simple_triggers</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#eef4f8;border-left:5px solid #2b4a63;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">泡沫与投机</div>
+        <div style="font-size:11.5px;color:#6b5440;">击鼓传花，终局时别接最后一棒</div>
+      </div>
+      <div style="background:#fff;border:1px solid #c9d6e0;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#27445c;">江南炒地</span>
+        <span style="font-size:11.5px;background:#dde8f0;color:#27445c;padding:2px 8px;border-radius:9px;">300 买 / 450 卖 / 2 季崩盘仅值 100</span>
+      </div>
+      <div style="background:#eef4f8;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">扬州事件池<br/>quick_strings + scripts</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#f3f3ee;border-left:5px solid #6b6b5e;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">货币与通胀</div>
+        <div style="font-size:11.5px;color:#6b5440;">纸钞的购买力会蒸发</div>
+      </div>
+      <div style="background:#fff;border:1px solid #d6d6c8;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#4f4f42;">宝钞风波</span>
+        <span style="font-size:11.5px;background:#e4e4d8;color:#4f4f42;padding:2px 8px;border-radius:9px;">现银损失 15%</span>
+      </div>
+      <div style="background:#f3f3ee;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">国运事件池<br/>simple_triggers</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#f3f3ee;border-left:5px solid #6b6b5e;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">行为金融</div>
+        <div style="font-size:11.5px;color:#6b5440;">羊群效应让价格偏离价值</div>
+      </div>
+      <div style="background:#fff;border:1px solid #d6d6c8;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#4f4f42;">米市羊群</span>
+        <span style="font-size:11.5px;background:#e4e4d8;color:#4f4f42;padding:2px 8px;border-radius:9px;">米价短暂背离基本面 ±25%</span>
+      </div>
+      <div style="background:#f3f3ee;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">市场事件池<br/>scripts 价格扰动</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#f3f3ee;border-left:5px solid #6b6b5e;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">财政危机</div>
+        <div style="font-size:11.5px;color:#6b5440;">政府征税与滥发侵蚀民间利润</div>
+      </div>
+      <div style="background:#fff;border:1px solid #d6d6c8;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#4f4f42;">三饷加派</span>
+        <span style="font-size:11.5px;background:#e4e4d8;color:#4f4f42;padding:2px 8px;border-radius:9px;">卖价 ×0.93 · 气数 -2</span>
+      </div>
+      <div style="background:#f3f3ee;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">国运事件池<br/>price_factor 钩子</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:200px 1fr 200px;gap:10px;margin-bottom:10px;">
+      <div style="background:#fbf6ec;border-left:5px solid #7e3b1e;border-radius:6px;padding:8px 10px;">
+        <div style="font-weight:700;font-size:14px;">分散化</div>
+        <div style="font-size:11.5px;color:#6b5440;">鸡蛋不放一个篮子，跨区配置</div>
+      </div>
+      <div style="background:#fff;border:1px solid #d8c9ae;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:center;">
+        <span style="font-weight:700;font-size:14px;color:#5d2a14;">多城商路组合</span>
+        <span style="font-size:11.5px;background:#efe3cd;color:#5d2a14;padding:2px 8px;border-radius:9px;">北方资产终局 ×0.6 折算</span>
+      </div>
+      <div style="background:#fbf6ec;border-radius:6px;padding:8px 10px;font-size:11.5px;color:#6b5440;">商路与持仓系统<br/>6 城 × 6 货品 × 15 商路</div>
+    </div>
+
+    <div style="background:#fff;border:1px dashed #b39b76;border-radius:8px;padding:12px 14px;margin-top:16px;">
+      <div style="font-weight:700;font-size:14px;color:#5d2a14;margin-bottom:8px;">数值验证证据（模拟 3,000 局/策略 × 5 组，6/6 断言 PASS）</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12.5px;">
+        <span style="background:#efe3cd;color:#5d2a14;padding:4px 10px;border-radius:10px;">稳健达成率 89.0%</span>
+        <span style="background:#efe3cd;color:#5d2a14;padding:4px 10px;border-radius:10px;">随机达成率 31.6%</span>
+        <span style="background:#e2e2d6;color:#4f4f42;padding:4px 10px;border-radius:10px;">赌徒达成率 0.0% · 破产 99.97%</span>
+        <span style="background:#dde8f0;color:#27445c;padding:4px 10px;border-radius:10px;">投保优于裸奔 Δ+3,724 两</span>
+        <span style="background:#dde8f0;color:#27445c;padding:4px 10px;border-radius:10px;">对冲降波动 σ 105 → 89</span>
+      </div>
+    </div>
+    <div style="font-size:11.5px;color:#8a6d4f;margin-top:12px;">原型：rimuxi-shandao.html（单文件离线可玩）· 模拟：sim_balance.py（与 HTML 同源配置）· 设计契约：design-contract.json · 本图为示意结构，数值均来自原型权威配置与模拟实测。</div>
+  </div>
+</div>
+</html>
