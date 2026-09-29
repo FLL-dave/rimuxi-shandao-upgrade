@@ -1,0 +1,31 @@
+﻿strings.txt -> current: NO-BOM(737472) | backup: NO-BOM(737472)
+quick_strings.txt -> current: NO-BOM(313133) | backup: NO-BOM(313133)
+simple_triggers.txt -> current: NO-BOM(73696d) | backup: NO-BOM(73696d)
+menus.txt -> current: NO-BOM(6d656e) | backup: NO-BOM(6d656e)
+languages\cns\game_strings.csv -> current: NO-BOM(0a7374) | backup: MISSING
+languages\cns\quick_strings.csv -> current: NO-BOM(0a7173) | backup: MISSING
+module.ini -> current: NO-BOM(6d6f64) | backup: NO-BOM(6d6f64)
+
+backup dir listing:
+   dialogs.csv.bak UTF8+BOM
+   factions.csv.bak UTF8+BOM
+   game_menus.csv.bak UTF8+BOM
+   game_strings.csv.bak UTF8+BOM
+   hints.csv.bak UTF8+BOM
+   info_pages.csv.bak UTF8+BOM
+   item_kinds.csv.bak UTF8+BOM
+   item_modifiers.csv.bak NO-BOM(696d6f)
+   menus.txt.bak NO-BOM(6d656e)
+   module.ini.bak NO-BOM(6d6f64)
+   parties.csv.bak UTF8+BOM
+   party_templates.csv.bak UTF8+BOM
+   quests.csv.bak UTF8+BOM
+   quick_strings.csv.bak UTF8+BOM
+   quick_strings.txt.bak NO-BOM(313133)
+   scripts.txt.bak NO-BOM(736372)
+   simple_triggers.txt.bak NO-BOM(73696d)
+   skills.csv.bak UTF8+BOM
+   skins.csv.bak NO-BOM(736b69)
+   strings.txt.bak NO-BOM(737472)
+   troops.csv.bak UTF8+BOM
+   ui.csv.bak UTF8+BOM

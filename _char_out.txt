@@ -1,0 +1,5 @@
+﻿strings.txt backup amp: 17 caret2: 43 | current amp: 20 caret2: 53
+  backup has double-caret sample: True
+quick_strings.txt backup amp: 0 caret2: 18 | current amp: 0 caret2: 18
+  backup has double-caret sample: True
+my str_rmx_manual: str_rmx_manual Merchant's_Manual_-_The_Way_of_Finance:^^1._Risk_&_Insurance:_esc

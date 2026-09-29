@@ -1,0 +1,14 @@
+﻿menus.txt chinese -> english
+languages\cns\game_strings.csv -> UTF-8+BOM restored
+languages\cns\quick_strings.csv -> UTF-8+BOM restored
+languages\cns\game_menus.csv -> UTF-8+BOM restored
+menus.txt NO-BOM
+strings.txt NO-BOM
+simple_triggers.txt NO-BOM
+quick_strings.txt NO-BOM
+languages\cns\game_strings.csv UTF8+BOM
+languages\cns\quick_strings.csv UTF8+BOM
+languages\cns\game_menus.csv UTF8+BOM
+menus decl: 276 defs: 276
+rmx menu line: menu_rmx_manual 0 {s1} none 0 1 2320 2 1 1585267068834412008
+camp entry:  mno_camp_action_1  1 30 2 144115188075856168 0  {!}Cheat:_Walk_around.  3 1911 1 792633534417207318 1 1 93674
