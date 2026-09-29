@@ -1,0 +1,15 @@
+﻿python : C:\Users\Administrator\DoubaoWork\chats\2026-09-29\new-chat\rimuxi-shandao\_rmx_restore.py:2: SyntaxWarning: "
+\*" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\*"? A raw string is also
+ an option.
+所在位置 行:1 字符: 82
++ ... muxi-shandao"; python _rmx_restore.py > _restore_out.txt 2>&1; python ...
++                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\Admini...also an option.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  """将 _rmx_finance_backup\*.bak 还原到原版 mod 目录（恢复改动前状态）。"""
+restored: 22
+   menus.txt, strings.txt, quick_strings.txt, simple_triggers.txt, scripts.txt, module.ini, dialogs.csv, factions.csv, game_menus.csv, game_strings.csv, hints.csv, info_pages.csv, item_kinds.csv, item_modifiers.csv, parties.csv, party_templates.csv, quests.csv, quick_strings.csv, skills.csv, skins.csv, troops.csv, ui.csv
+menus: 275 strings: 3580 quick: qstr_Divided_Countries_V1 triggers: 139
+module.ini renamed
+b'module_name = Calradia - Finance Way\r'

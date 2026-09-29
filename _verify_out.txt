@@ -1,0 +1,22 @@
+﻿======== FINANCE
+  menus decl/defs: 276 276
+  strings: 3609
+  quick(first line): 1137
+  triggers: 140
+  game_strings.csv: BOM
+  quick_strings.csv: BOM
+  game_menus.csv: BOM
+======== ORIGINAL
+  menus decl/defs: 275 275
+  strings: 3580
+  quick(first line): 1132
+  triggers: 139
+  game_strings.csv: BOM
+  quick_strings.csv: BOM
+  game_menus.csv: BOM
+FINANCE has mno_rmx_manual: True | chinese in menus: False
+ORIGINAL has mno_rmx_manual: False | chinese in menus: False
+FINANCE has str_rmx_manual: True
+ORIGINAL has str_rmx_manual: False
+FINANCE has B2 trigger: True
+backup dirs: True True
