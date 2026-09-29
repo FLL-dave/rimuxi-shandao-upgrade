@@ -49,6 +49,7 @@
 | B0 | 全量备份目标文件到 `_rmx_finance_backup\*.bak` | 全部 | ✅ |
 | B1 | 追加金融之道文本资产：8 季报 + 6 希勒卡 + 8 事件 + 6 体检点评（str_rmx_*）+ 5 快速消息（qstr_rmx_*），双语汉化同步 | strings.txt（+28，计数 3580→3608 校验 ✅）、quick_strings.txt（+5，1132→1137 ✅）、languages\cns\game_strings.csv（+28，key 无冲突）、quick_strings.csv（+5 ✅） | ✅ |
 | B2 | 商道季结触发器：每 7 天给玩家 +100 两（操作码 1528=troop_add_gold、引用 360287970189639680=trp_player，与 simple_triggers.txt 既有第 140 行用法逐位一致） | simple_triggers.txt（+1，139→140 校验 ✅） | ✅ |
+| B3 | 商道手册菜单：营地（menu_camp）追加入口"商道手册"→ 跳转 menu_rmx_manual（新菜单 id=275，菜单引用 0xC000000000000000+id；操作码 2060=jump_to_menu、2320=str_store_string，与既有 mno_continue/menu_morale_report 模式一致），打开时经 `{s1}` 注入课程要点总览（str_rmx_manual，9 概念×数值，字符串引用编码 0x16000000000000000−str_id） | menus.txt（+2 行，275→276 校验 ✅）、strings.txt（+1，3608→3609 ✅）、game_strings.csv（+1 汉化） | ✅ |
 
 **待游戏内验证**（txt 无编译期检查，建议逐项启动游戏实测，每项可删行回滚）：
 - P0-3 青苗合约结算（需脚本参数与菜单，追加式新脚本）
